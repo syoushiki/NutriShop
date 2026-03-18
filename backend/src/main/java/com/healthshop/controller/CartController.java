@@ -28,7 +28,13 @@ public class CartController {
   }
   @GetMapping
   public Map<String, Object> get() {
-    List<CartItem> items = cartRepo.findByUsername(currentUser());
+    String user = currentUser();
+    if ("anonymousUser".equals(user) || "guest".equals(user)) {
+      Map<String, Object> m = new HashMap<>();
+      m.put("items", List.of());
+      return m;
+    }
+    List<CartItem> items = cartRepo.findByUsername(user);
     Map<String, Object> m = new HashMap<>();
     m.put("items", items);
     return m;

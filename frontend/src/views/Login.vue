@@ -163,6 +163,10 @@ const handleLogin = async () => {
     const response = await axios.post('/api/auth/login', {
       username: loginForm.value.username,
       password: loginForm.value.password
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
     })
     localStorage.setItem('token', response.data.token)
     localStorage.setItem('username', loginForm.value.username)
@@ -170,7 +174,11 @@ const handleLogin = async () => {
     window.dispatchEvent(new Event('auth-change'))
     router.push('/')
   } catch (error: any) {
-    ElMessage.error('登录失败：' + (error.response?.data?.message || '用户名或密码错误'))
+    if (error.response && error.response.status === 401) {
+      ElMessage.error('用户名或密码不正确')
+    } else {
+      ElMessage.error('登录失败：' + (error.response?.data?.message || '服务器内部错误'))
+    }
   } finally {
     loading.value = false
   }
@@ -186,6 +194,10 @@ const handleRegister = async () => {
       password: registerForm.value.password,
       email: registerForm.value.email,
       phone: registerForm.value.phone
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
     })
     
     // Auto login

@@ -108,10 +108,23 @@ function search() {
   if(q.value) router.push({ path: '/', query: { q: q.value, category: searchCategory.value } }) 
 }
 
-const checkLoginStatus = () => {
+const checkLoginStatus = async () => {
   const token = localStorage.getItem('token')
   isLoggedIn.value = !!token
   username.value = localStorage.getItem('username') || '用户'
+  
+  if (isLoggedIn.value) {
+    try {
+      const { data } = await axios.get('/api/cart')
+      if(data && data.items) {
+        cartCount.value = data.items.reduce((acc: number, item: any) => acc + item.quantity, 0)
+      }
+    } catch (e) {
+      cartCount.value = 0
+    }
+  } else {
+    cartCount.value = 0
+  }
 }
 
 const handleLogout = () => {
@@ -122,19 +135,9 @@ const handleLogout = () => {
   router.push('/login')
 }
 
-onMounted(async () => {
+onMounted(() => {
   checkLoginStatus()
   window.addEventListener('auth-change', checkLoginStatus)
-  
-  // 简单获取购物车数量占位
-  try {
-    const { data } = await axios.get('/api/cart')
-    if(data && data.items) {
-      cartCount.value = data.items.reduce((acc: number, item: any) => acc + item.quantity, 0)
-    }
-  } catch (e) {
-    // ignore login error
-  }
 })
 </script>
 

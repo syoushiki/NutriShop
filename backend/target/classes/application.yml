@@ -22,7 +22,7 @@ server:
   port: ${PORT:8080}
 security:
   jwt:
-    secret: ${JWT_SECRET:change_me}
+    secret: ${JWT_SECRET:bXktMzItY2hhcmFjdGVyLXVsdHJhLXNlY3VyZS1hbmQtdWx0cmEtbG9uZy1zZWNyZXQ=}
     expiration: ${JWT_EXPIRATION:3600000}
 alipay:
   app-id: ${ALIPAY_APP_ID:}
