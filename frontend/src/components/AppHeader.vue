@@ -22,13 +22,13 @@
         </router-link>
         <el-dropdown v-else>
           <span class="nav-link">
-            <el-icon><User /></el-icon> 我的账户<el-icon class="el-icon--right"><ArrowDown /></el-icon>
+            <el-icon><User /></el-icon> 欢迎, {{ username }}<el-icon class="el-icon--right"><ArrowDown /></el-icon>
           </span>
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item>我的订单</el-dropdown-item>
-              <el-dropdown-item>我的账户</el-dropdown-item>
               <el-dropdown-item>我的收藏</el-dropdown-item>
+              <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -97,6 +97,7 @@ const router = useRouter()
 const route = useRoute()
 const cartCount = ref(0)
 const isLoggedIn = ref(false)
+const username = ref('')
 
 // 判断是否是首页
 const isHomePage = computed(() => {
@@ -110,6 +111,15 @@ function search() {
 const checkLoginStatus = () => {
   const token = localStorage.getItem('token')
   isLoggedIn.value = !!token
+  username.value = localStorage.getItem('username') || '用户'
+}
+
+const handleLogout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('username')
+  isLoggedIn.value = false
+  window.dispatchEvent(new Event('auth-change'))
+  router.push('/login')
 }
 
 onMounted(async () => {

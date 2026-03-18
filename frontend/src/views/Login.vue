@@ -165,6 +165,7 @@ const handleLogin = async () => {
       password: loginForm.value.password
     })
     localStorage.setItem('token', response.data.token)
+    localStorage.setItem('username', loginForm.value.username)
     ElMessage.success('登录成功')
     window.dispatchEvent(new Event('auth-change'))
     router.push('/')
@@ -189,6 +190,7 @@ const handleRegister = async () => {
     
     // Auto login
     localStorage.setItem('token', response.data.token)
+    localStorage.setItem('username', registerForm.value.username)
     ElMessage.success('注册成功，即将为您跳转...')
     window.dispatchEvent(new Event('auth-change'))
     
