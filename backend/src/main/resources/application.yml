@@ -1,0 +1,32 @@
+spring:
+  sql:
+    init:
+      mode: always
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/healthshop?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:040930}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+server:
+  port: ${PORT:8080}
+security:
+  jwt:
+    secret: ${JWT_SECRET:change_me}
+    expiration: ${JWT_EXPIRATION:3600000}
+alipay:
+  app-id: ${ALIPAY_APP_ID:}
+  private-key: ${ALIPAY_PRIVATE_KEY:}
+  alipay-public-key: ${ALIPAY_PUBLIC_KEY:}
+  server-url: https://openapi.alipaydev.com/gateway.do
+  notify-url: ${ALIPAY_NOTIFY_URL:http://localhost:8080/api/pay/notify}
