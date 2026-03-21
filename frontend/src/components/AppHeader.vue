@@ -26,6 +26,7 @@
           </span>
           <template #dropdown>
             <el-dropdown-menu>
+              <el-dropdown-item v-if="isAdmin" @click="router.push('/admin')">后台管理</el-dropdown-item>
               <el-dropdown-item>我的订单</el-dropdown-item>
               <el-dropdown-item>我的收藏</el-dropdown-item>
               <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
@@ -97,6 +98,7 @@ const router = useRouter()
 const route = useRoute()
 const cartCount = ref(0)
 const isLoggedIn = ref(false)
+const isAdmin = ref(false)
 const username = ref('')
 
 // 判断是否是首页
@@ -112,6 +114,7 @@ const checkLoginStatus = async () => {
   const token = localStorage.getItem('token')
   isLoggedIn.value = !!token
   username.value = localStorage.getItem('username') || '用户'
+  isAdmin.value = localStorage.getItem('role') === 'ADMIN'
   
   if (isLoggedIn.value) {
     try {
@@ -130,7 +133,9 @@ const checkLoginStatus = async () => {
 const handleLogout = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('username')
+  localStorage.removeItem('role')
   isLoggedIn.value = false
+  isAdmin.value = false
   window.dispatchEvent(new Event('auth-change'))
   router.push('/login')
 }

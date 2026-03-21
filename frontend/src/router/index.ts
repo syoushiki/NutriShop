@@ -20,4 +20,17 @@ const router = createRouter({
   routes
 })
 
+router.beforeEach((to, from, next) => {
+  if (to.path === '/admin') {
+    const role = localStorage.getItem('role')
+    if (role === 'ADMIN') {
+      next()
+    } else {
+      next('/')
+    }
+  } else {
+    next()
+  }
+})
+
 export default router

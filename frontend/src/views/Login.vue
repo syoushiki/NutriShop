@@ -170,9 +170,32 @@ const handleLogin = async () => {
     })
     localStorage.setItem('token', response.data.token)
     localStorage.setItem('username', loginForm.value.username)
-    ElMessage.success('登录成功')
-    window.dispatchEvent(new Event('auth-change'))
-    router.push('/')
+    
+    // 获取用户信息以获取角色
+    try {
+      const meResponse = await axios.get('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${response.data.token}`
+        }
+      })
+      const role = meResponse.data.role || 'USER'
+      localStorage.setItem('role', role)
+      
+      ElMessage.success('登录成功')
+      window.dispatchEvent(new Event('auth-change'))
+      
+      if (role === 'ADMIN') {
+        router.push('/admin')
+      } else {
+        router.push('/')
+      }
+    } catch (err) {
+      // 降级处理
+      localStorage.setItem('role', 'USER')
+      ElMessage.success('登录成功')
+      window.dispatchEvent(new Event('auth-change'))
+      router.push('/')
+    }
   } catch (error: any) {
     if (error.response && error.response.status === 401) {
       ElMessage.error('用户名或密码不正确')
@@ -203,6 +226,7 @@ const handleRegister = async () => {
     // Auto login
     localStorage.setItem('token', response.data.token)
     localStorage.setItem('username', registerForm.value.username)
+    localStorage.setItem('role', 'USER')
     ElMessage.success('注册成功，即将为您跳转...')
     window.dispatchEvent(new Event('auth-change'))
     
