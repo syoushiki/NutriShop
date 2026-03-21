@@ -3,7 +3,7 @@ spring:
     init:
       mode: always
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/healthshop?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/healthshop?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:040930}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -20,6 +20,11 @@ spring:
       port: ${REDIS_PORT:6379}
 server:
   port: ${PORT:8080}
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
 security:
   jwt:
     secret: ${JWT_SECRET:bXktMzItY2hhcmFjdGVyLXVsdHJhLXNlY3VyZS1hbmQtdWx0cmEtbG9uZy1zZWNyZXQ=}

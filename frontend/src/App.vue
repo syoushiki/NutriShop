@@ -72,4 +72,18 @@ a:hover {
 .el-rate__icon {
   color: #ff9900 !important;
 }
+
+/* 修复全局 SVG 图标大小问题 */
+.el-icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
+
+.el-icon svg {
+  width: 100%;
+  height: 100%;
+}
 </style>

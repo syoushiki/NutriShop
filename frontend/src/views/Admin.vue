@@ -1,60 +1,111 @@
 <template>
   <div class="admin-container">
     <el-card class="admin-card">
-      <div class="header">
-        <h2>商品管理</h2>
-        <el-button type="primary" @click="openAddDialog">新增商品</el-button>
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <h2>商品管理</h2>
+          <p>共 {{ products.length }} 件商品</p>
+        </div>
+        <div class="toolbar-right">
+          <el-button type="primary" :icon="Plus" @click="openAddDialog">新增商品</el-button>
+        </div>
       </div>
 
-      <el-table :data="products" style="width: 100%" v-loading="loading">
+      <el-table :data="products" v-loading="loading" class="admin-table">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="name" label="商品名称" width="180" />
-        <el-table-column prop="price" label="价格(¥)" width="100" />
-        <el-table-column prop="imageUrl" label="图片" width="120">
-          <template #default="scope">
-            <img v-if="scope.row.imageUrl" :src="scope.row.imageUrl" alt="商品图片" class="product-img" />
-            <span v-else>无图片</span>
+        <el-table-column prop="name" label="商品名称" min-width="180" />
+        <el-table-column prop="price" label="价格(¥)" width="120">
+          <template #default="{ row }">
+            ¥{{ Number(row.price || 0).toFixed(2) }}
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="描述" show-overflow-tooltip />
-        <el-table-column label="操作" width="180">
-          <template #default="scope">
-            <el-button size="small" @click="openEditDialog(scope.row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="handleDelete(scope.row.id)">删除</el-button>
+        <el-table-column prop="imageUrl" label="图片" width="120">
+          <template #default="{ row }">
+            <img v-if="row.imageUrl" :src="row.imageUrl" alt="商品图片" class="product-img" />
+            <span v-else class="empty-tip">无图片</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="description" label="描述" show-overflow-tooltip min-width="220" />
+        <el-table-column label="操作" width="220" fixed="right">
+          <template #default="{ row }">
+            <div class="action-group">
+              <el-button size="small" type="primary" plain :icon="Edit" @click="openEditDialog(row)">修改</el-button>
+              <el-button size="small" type="danger" plain :icon="Delete" @click="handleDelete(row.id)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
 
-    <!-- 商品表单弹窗 -->
-    <el-dialog :title="isEdit ? '编辑商品' : '新增商品'" v-model="dialogVisible" width="500px">
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="80px">
+    <el-dialog
+      title="新增商品"
+      v-model="addDialogVisible"
+      width="560px"
+      destroy-on-close
+      class="product-dialog"
+    >
+      <el-form ref="addFormRef" :model="addForm" :rules="rules" label-width="90px">
         <el-form-item label="商品名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入商品名称"></el-input>
+          <el-input v-model="addForm.name" placeholder="请输入商品名称" />
         </el-form-item>
         <el-form-item label="价格" prop="price">
-          <el-input-number v-model="form.price" :min="0" :precision="2" :step="1" placeholder="请输入价格" style="width: 100%;"></el-input-number>
+          <el-input-number v-model="addForm.price" :min="0" :precision="2" :step="1" :controls="false" style="width: 100%" />
         </el-form-item>
         <el-form-item label="图片URL" prop="imageUrl">
-          <el-input v-model="form.imageUrl" placeholder="请输入图片链接"></el-input>
+          <el-input v-model="addForm.imageUrl" placeholder="请输入图片链接" />
         </el-form-item>
         <el-form-item label="商品描述" prop="description">
-          <el-input type="textarea" v-model="form.description" :rows="3" placeholder="请输入商品描述"></el-input>
+          <el-input v-model="addForm.description" type="textarea" :rows="3" placeholder="请输入商品描述" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitForm" :loading="submitLoading">确定</el-button>
-        </span>
+        <el-button @click="addDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="addSubmitting" @click="submitAddForm">确认新增</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog
+      title="修改商品"
+      v-model="editDialogVisible"
+      width="560px"
+      destroy-on-close
+      class="product-dialog"
+    >
+      <el-form ref="editFormRef" :model="editForm" :rules="rules" label-width="90px">
+        <el-form-item label="商品名称" prop="name">
+          <el-input v-model="editForm.name" placeholder="请输入商品名称" />
+        </el-form-item>
+        <el-form-item label="价格" prop="price">
+          <el-input-number v-model="editForm.price" :min="0" :precision="2" :step="1" :controls="false" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="图片URL" prop="imageUrl">
+          <el-input v-model="editForm.imageUrl" placeholder="请输入图片链接" />
+        </el-form-item>
+        <el-form-item label="商品描述" prop="description">
+          <el-input v-model="editForm.description" type="textarea" :rows="3" placeholder="请输入商品描述" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="editSubmitting" @click="submitEditForm">确认修改</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog title="确认删除" v-model="deleteDialogVisible" width="420px" destroy-on-close>
+      <p>确认删除该商品吗？删除后无法恢复。</p>
+      <template #footer>
+        <el-button @click="deleteDialogVisible = false">取消</el-button>
+        <el-button type="danger" :loading="deleteLoading" @click="confirmDelete">确认删除</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { onMounted, ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import type { FormInstance, FormRules } from 'element-plus'
+import { Delete, Edit, Plus } from '@element-plus/icons-vue'
 import axios from 'axios'
 
 interface Product {
@@ -65,24 +116,33 @@ interface Product {
   price: number
 }
 
-const products = ref<Product[]>([])
-const loading = ref(false)
-
-const dialogVisible = ref(false)
-const isEdit = ref(false)
-const submitLoading = ref(false)
-const formRef = ref<any>(null)
-
-const form = ref<Product>({
+const createEmptyProduct = (): Product => ({
   name: '',
   description: '',
   imageUrl: '',
   price: 0
 })
 
-const rules = {
+const products = ref<Product[]>([])
+const loading = ref(false)
+
+const addDialogVisible = ref(false)
+const addSubmitting = ref(false)
+const addFormRef = ref<FormInstance>()
+const addForm = ref<Product>(createEmptyProduct())
+
+const editDialogVisible = ref(false)
+const editSubmitting = ref(false)
+const editFormRef = ref<FormInstance>()
+const editForm = ref<Product>(createEmptyProduct())
+
+const deleteDialogVisible = ref(false)
+const deleteLoading = ref(false)
+const productToDelete = ref<number | null>(null)
+
+const rules: FormRules<Product> = {
   name: [{ required: true, message: '请输入商品名称', trigger: 'blur' }],
-  price: [{ required: true, message: '请输入价格', trigger: 'blur' }]
+  price: [{ required: true, message: '请输入价格', trigger: 'change' }]
 }
 
 const fetchProducts = async () => {
@@ -90,7 +150,7 @@ const fetchProducts = async () => {
   try {
     const res = await axios.get('/api/products')
     products.value = res.data
-  } catch (error) {
+  } catch {
     ElMessage.error('获取商品列表失败')
   } finally {
     loading.value = false
@@ -98,92 +158,157 @@ const fetchProducts = async () => {
 }
 
 const openAddDialog = () => {
-  isEdit.value = false
-  form.value = { name: '', description: '', imageUrl: '', price: 0 }
-  dialogVisible.value = true
-  if (formRef.value) formRef.value.clearValidate()
+  addForm.value = createEmptyProduct()
+  addDialogVisible.value = true
+  addFormRef.value?.clearValidate()
 }
 
 const openEditDialog = (row: Product) => {
-  isEdit.value = true
-  form.value = { ...row }
-  dialogVisible.value = true
-  if (formRef.value) formRef.value.clearValidate()
+  editForm.value = { ...row }
+  editDialogVisible.value = true
+  editFormRef.value?.clearValidate()
 }
 
-const submitForm = async () => {
-  if (!formRef.value) return
-  await formRef.value.validate(async (valid: boolean) => {
-    if (valid) {
-      submitLoading.value = true
-      try {
-        if (isEdit.value) {
-          await axios.put(`/api/products/${form.value.id}`, form.value)
-          ElMessage.success('更新成功')
-        } else {
-          await axios.post('/api/products', form.value)
-          ElMessage.success('添加成功')
-        }
-        dialogVisible.value = false
-        fetchProducts()
-      } catch (error) {
-        ElMessage.error(isEdit.value ? '更新失败' : '添加失败')
-      } finally {
-        submitLoading.value = false
-      }
+const submitAddForm = async () => {
+  if (!addFormRef.value) return
+  const valid = await addFormRef.value.validate().catch(() => false)
+  if (!valid) return
+
+  addSubmitting.value = true
+  try {
+    const payload = { ...addForm.value }
+    if (!payload.imageUrl) {
+      payload.imageUrl = null as any
     }
-  })
-}
-
-const handleDelete = (id: number) => {
-  ElMessageBox.confirm('确定要删除该商品吗？', '警告', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(async () => {
-    try {
-      await axios.delete(`/api/products/${id}`)
-      ElMessage.success('删除成功')
-      fetchProducts()
-    } catch (error) {
-      ElMessage.error('删除失败')
+    await axios.post('/api/products', payload)
+    ElMessage.success('新增成功')
+    addDialogVisible.value = false
+    await fetchProducts()
+  } catch (error: any) {
+    console.error('新增失败:', error)
+    if (error.response && error.response.data) {
+        ElMessage.error('新增失败: ' + (error.response.data.message || error.response.statusText || '内部服务器错误'))
+    } else {
+        ElMessage.error('新增失败')
     }
-  }).catch(() => {})
+  } finally {
+    addSubmitting.value = false
+  }
 }
 
-onMounted(() => {
-  fetchProducts()
-})
+const submitEditForm = async () => {
+  if (!editFormRef.value) return
+  const valid = await editFormRef.value.validate().catch(() => false)
+  if (!valid || !editForm.value.id) return
+
+  editSubmitting.value = true
+  try {
+    const payload = { ...editForm.value }
+    if (!payload.imageUrl) {
+      payload.imageUrl = null as any
+    }
+    await axios.put(`/api/products/${editForm.value.id}`, payload)
+    ElMessage.success('修改成功')
+    editDialogVisible.value = false
+    await fetchProducts()
+  } catch (error: any) {
+    console.error('修改失败:', error)
+    if (error.response && error.response.data) {
+        ElMessage.error('修改失败: ' + (error.response.data.message || error.response.statusText || '内部服务器错误'))
+    } else {
+        ElMessage.error('修改失败')
+    }
+  } finally {
+    editSubmitting.value = false
+  }
+}
+
+const handleDelete = (id?: number) => {
+  if (!id) return
+  productToDelete.value = id
+  deleteDialogVisible.value = true
+}
+
+const confirmDelete = async () => {
+  if (!productToDelete.value) return
+  deleteLoading.value = true
+  try {
+    await axios.delete(`/api/products/${productToDelete.value}`)
+    ElMessage.success('删除成功')
+    deleteDialogVisible.value = false
+    await fetchProducts()
+  } catch {
+    ElMessage.error('删除失败')
+  } finally {
+    deleteLoading.value = false
+    productToDelete.value = null
+  }
+}
+
+onMounted(fetchProducts)
 </script>
 
 <style scoped>
 .admin-container {
-  padding: 20px;
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
+  padding: 24px;
 }
 
 .admin-card {
-  margin-top: 20px;
+  border-radius: 14px;
 }
 
-.header {
+.toolbar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  justify-content: space-between;
+  margin-bottom: 18px;
 }
 
-.header h2 {
+.toolbar-left h2 {
   margin: 0;
-  font-size: 20px;
-  color: #333;
+  font-size: 22px;
+  color: #222;
+}
+
+.toolbar-left p {
+  margin: 6px 0 0;
+  color: #76839a;
+  font-size: 13px;
+}
+
+.admin-table {
+  width: 100%;
 }
 
 .product-img {
-  width: 50px;
-  height: 50px;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
   object-fit: cover;
-  border-radius: 4px;
+  border: 1px solid #ebeef5;
+}
+
+.empty-tip {
+  color: #9aa4b2;
+  font-size: 13px;
+}
+
+.action-group {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 12px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
 }
 </style>
