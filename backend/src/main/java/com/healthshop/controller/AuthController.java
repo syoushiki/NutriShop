@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -60,7 +62,13 @@ public class AuthController {
     if (token == null) return ResponseEntity.status(401).build();
     String subject = jwtUtil.getSubject(token);
     return userRepository.findByUsername(subject)
-        .map(ResponseEntity::ok)
+        .map(user -> ResponseEntity.ok(Map.of(
+            "id", user.getId(),
+            "username", user.getUsername(),
+            "email", user.getEmail() == null ? "" : user.getEmail(),
+            "phone", user.getPhone() == null ? "" : user.getPhone(),
+            "role", user.getRole()
+        )))
         .orElseGet(() -> ResponseEntity.status(401).build());
   }
 }

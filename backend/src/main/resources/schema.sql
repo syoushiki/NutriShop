@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS users (
+﻿CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
@@ -13,7 +13,9 @@ CREATE TABLE IF NOT EXISTS products (
     name VARCHAR(255) NOT NULL,
     description VARCHAR(2000),
     image_url VARCHAR(255),
-    price DECIMAL(19, 2) NOT NULL
+    price DECIMAL(19, 2) NOT NULL,
+    tags VARCHAR(500),
+    target_audience VARCHAR(500)
 );
 
 CREATE TABLE IF NOT EXISTS cart_items (
@@ -23,4 +25,15 @@ CREATE TABLE IF NOT EXISTS cart_items (
     name VARCHAR(255) NOT NULL,
     price DECIMAL(19, 2) NOT NULL,
     quantity INT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS user_profiles (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL UNIQUE,
+    age_group VARCHAR(50) NOT NULL,
+    gender VARCHAR(50) NOT NULL,
+    health_goals VARCHAR(500),
+    budget VARCHAR(50) NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL
 );

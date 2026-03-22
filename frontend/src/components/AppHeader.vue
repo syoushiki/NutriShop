@@ -134,6 +134,7 @@ const handleLogout = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('username')
   localStorage.removeItem('role')
+  localStorage.removeItem('userId')
   isLoggedIn.value = false
   isAdmin.value = false
   window.dispatchEvent(new Event('auth-change'))

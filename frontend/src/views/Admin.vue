@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="admin-container">
     <el-card class="admin-card">
       <div class="toolbar">
@@ -13,7 +13,9 @@
 
       <el-table :data="products" v-loading="loading" class="admin-table">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="name" label="商品名称" min-width="180" />
+        <el-table-column prop="name" label="商品名称" min-width="160" />
+        <el-table-column prop="tags" label="标签" min-width="160" show-overflow-tooltip />
+        <el-table-column prop="targetAudience" label="适用人群" min-width="180" show-overflow-tooltip />
         <el-table-column prop="price" label="价格(¥)" width="120">
           <template #default="{ row }">
             ¥{{ Number(row.price || 0).toFixed(2) }}
@@ -37,19 +39,19 @@
       </el-table>
     </el-card>
 
-    <el-dialog
-      title="新增商品"
-      v-model="addDialogVisible"
-      width="560px"
-      destroy-on-close
-      class="product-dialog"
-    >
-      <el-form ref="addFormRef" :model="addForm" :rules="rules" label-width="90px">
+    <el-dialog title="新增商品" v-model="addDialogVisible" width="620px" destroy-on-close class="product-dialog">
+      <el-form ref="addFormRef" :model="addForm" :rules="rules" label-width="100px">
         <el-form-item label="商品名称" prop="name">
           <el-input v-model="addForm.name" placeholder="请输入商品名称" />
         </el-form-item>
         <el-form-item label="价格" prop="price">
           <el-input-number v-model="addForm.price" :min="0" :precision="2" :step="1" :controls="false" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="标签" prop="tags">
+          <el-input v-model="addForm.tags" placeholder="例如：sleep,eyes,fitness" />
+        </el-form-item>
+        <el-form-item label="适用人群" prop="targetAudience">
+          <el-input v-model="addForm.targetAudience" placeholder="例如：male,18-30 或 all,31-50" />
         </el-form-item>
         <el-form-item label="图片URL" prop="imageUrl">
           <el-input v-model="addForm.imageUrl" placeholder="请输入图片链接" />
@@ -64,19 +66,19 @@
       </template>
     </el-dialog>
 
-    <el-dialog
-      title="修改商品"
-      v-model="editDialogVisible"
-      width="560px"
-      destroy-on-close
-      class="product-dialog"
-    >
-      <el-form ref="editFormRef" :model="editForm" :rules="rules" label-width="90px">
+    <el-dialog title="修改商品" v-model="editDialogVisible" width="620px" destroy-on-close class="product-dialog">
+      <el-form ref="editFormRef" :model="editForm" :rules="rules" label-width="100px">
         <el-form-item label="商品名称" prop="name">
           <el-input v-model="editForm.name" placeholder="请输入商品名称" />
         </el-form-item>
         <el-form-item label="价格" prop="price">
           <el-input-number v-model="editForm.price" :min="0" :precision="2" :step="1" :controls="false" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="标签" prop="tags">
+          <el-input v-model="editForm.tags" placeholder="例如：sleep,eyes,fitness" />
+        </el-form-item>
+        <el-form-item label="适用人群" prop="targetAudience">
+          <el-input v-model="editForm.targetAudience" placeholder="例如：male,18-30 或 all,31-50" />
         </el-form-item>
         <el-form-item label="图片URL" prop="imageUrl">
           <el-input v-model="editForm.imageUrl" placeholder="请输入图片链接" />
@@ -114,13 +116,17 @@ interface Product {
   description: string
   imageUrl: string
   price: number
+  tags: string
+  targetAudience: string
 }
 
 const createEmptyProduct = (): Product => ({
   name: '',
   description: '',
   imageUrl: '',
-  price: 0
+  price: 0,
+  tags: '',
+  targetAudience: ''
 })
 
 const products = ref<Product[]>([])
@@ -164,7 +170,11 @@ const openAddDialog = () => {
 }
 
 const openEditDialog = (row: Product) => {
-  editForm.value = { ...row }
+  editForm.value = {
+    ...row,
+    tags: row.tags || '',
+    targetAudience: row.targetAudience || ''
+  }
   editDialogVisible.value = true
   editFormRef.value?.clearValidate()
 }
@@ -179,7 +189,9 @@ const buildProductPayload = (form: Product) => ({
   name: form.name.trim(),
   price: form.price,
   description: toNullableText(form.description),
-  imageUrl: toNullableText(form.imageUrl)
+  imageUrl: toNullableText(form.imageUrl),
+  tags: toNullableText(form.tags),
+  targetAudience: toNullableText(form.targetAudience)
 })
 
 const submitAddForm = async () => {
@@ -195,13 +207,8 @@ const submitAddForm = async () => {
     addDialogVisible.value = false
     await fetchProducts()
   } catch (error: any) {
-    console.error('新增失败:', error)
-    if (error.response) {
-      const errorMsg = error.response.data?.message || error.response.data || error.response.statusText || '内部服务器错误'
-      ElMessage.error(`新增失败: ${errorMsg} (状态码: ${error.response.status})`)
-    } else {
-      ElMessage.error(`新增失败: ${error.message}`)
-    }
+    const errorMsg = error.response?.data?.message || error.response?.data || error.response?.statusText || error.message || '服务器错误'
+    ElMessage.error(`新增失败: ${errorMsg}`)
   } finally {
     addSubmitting.value = false
   }
@@ -220,13 +227,8 @@ const submitEditForm = async () => {
     editDialogVisible.value = false
     await fetchProducts()
   } catch (error: any) {
-    console.error('修改失败:', error)
-    if (error.response) {
-      const errorMsg = error.response.data?.message || error.response.data || error.response.statusText || '内部服务器错误'
-      ElMessage.error(`修改失败: ${errorMsg} (状态码: ${error.response.status})`)
-    } else {
-      ElMessage.error(`修改失败: ${error.message}`)
-    }
+    const errorMsg = error.response?.data?.message || error.response?.data || error.response?.statusText || error.message || '服务器错误'
+    ElMessage.error(`修改失败: ${errorMsg}`)
   } finally {
     editSubmitting.value = false
   }

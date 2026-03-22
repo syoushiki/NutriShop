@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="container">
     <div class="card">
       <h2 class="title">用户中心</h2>
@@ -19,61 +19,20 @@
       </div>
 
       <div v-if="activeTab === 'login'">
-        <input
-          class="input"
-          placeholder="用户名"
-          v-model="loginForm.username"
-        />
-        <input
-          class="input"
-          type="password"
-          placeholder="密码"
-          v-model="loginForm.password"
-        />
-        <button
-          class="button"
-          @click="handleLogin"
-          :disabled="loading"
-        >
+        <input class="input" placeholder="用户名" v-model="loginForm.username" />
+        <input class="input" type="password" placeholder="密码" v-model="loginForm.password" />
+        <button class="button" @click="handleLogin" :disabled="loading">
           {{ loading ? '登录中...' : '登录' }}
         </button>
       </div>
 
       <div v-if="activeTab === 'register'">
-        <input
-          class="input"
-          placeholder="用户名"
-          v-model="registerForm.username"
-        />
-        <input
-          class="input"
-          type="email"
-          placeholder="邮箱"
-          v-model="registerForm.email"
-        />
-        <input
-          class="input"
-          type="tel"
-          placeholder="手机号"
-          v-model="registerForm.phone"
-        />
-        <input
-          class="input"
-          type="password"
-          placeholder="密码（至少6位）"
-          v-model="registerForm.password"
-        />
-        <input
-          class="input"
-          type="password"
-          placeholder="确认密码"
-          v-model="registerForm.confirmPassword"
-        />
-        <button
-          class="button register-button"
-          @click="handleRegister"
-          :disabled="loading"
-        >
+        <input class="input" placeholder="用户名" v-model="registerForm.username" />
+        <input class="input" type="email" placeholder="邮箱" v-model="registerForm.email" />
+        <input class="input" type="tel" placeholder="手机号" v-model="registerForm.phone" />
+        <input class="input" type="password" placeholder="密码（至少6位）" v-model="registerForm.password" />
+        <input class="input" type="password" placeholder="确认密码" v-model="registerForm.confirmPassword" />
+        <button class="button register-button" @click="handleRegister" :disabled="loading">
           {{ loading ? '注册中...' : '注册' }}
         </button>
       </div>
@@ -104,7 +63,7 @@ const loading = ref(false)
 
 const loginForm = ref<LoginForm>({
   username: '',
-  password: '',
+  password: ''
 })
 
 const registerForm = ref<RegisterForm>({
@@ -112,7 +71,7 @@ const registerForm = ref<RegisterForm>({
   password: '',
   confirmPassword: '',
   email: '',
-  phone: '',
+  phone: ''
 })
 
 const setActiveTab = (tab: 'login' | 'register') => {
@@ -168,30 +127,32 @@ const handleLogin = async () => {
         'Content-Type': 'application/json'
       }
     })
+
     localStorage.setItem('token', response.data.token)
     localStorage.setItem('username', loginForm.value.username)
-    
-    // 获取用户信息以获取角色
+
     try {
       const meResponse = await axios.get('/api/auth/me', {
         headers: {
-          'Authorization': `Bearer ${response.data.token}`
+          Authorization: `Bearer ${response.data.token}`
         }
       })
       const role = meResponse.data.role || 'USER'
       localStorage.setItem('role', role)
-      
+      if (meResponse.data?.id) {
+        localStorage.setItem('userId', String(meResponse.data.id))
+      }
+
       ElMessage.success('登录成功')
       window.dispatchEvent(new Event('auth-change'))
-      
       if (role === 'ADMIN') {
         router.push('/admin')
       } else {
         router.push('/')
       }
-    } catch (err) {
-      // 降级处理
+    } catch {
       localStorage.setItem('role', 'USER')
+      localStorage.removeItem('userId')
       ElMessage.success('登录成功')
       window.dispatchEvent(new Event('auth-change'))
       router.push('/')
@@ -222,34 +183,42 @@ const handleRegister = async () => {
         'Content-Type': 'application/json'
       }
     })
-    
-    // Auto login
+
     localStorage.setItem('token', response.data.token)
     localStorage.setItem('username', registerForm.value.username)
     localStorage.setItem('role', 'USER')
+
+    try {
+      const meResponse = await axios.get('/api/auth/me', {
+        headers: {
+          Authorization: `Bearer ${response.data.token}`
+        }
+      })
+      if (meResponse.data?.id) {
+        localStorage.setItem('userId', String(meResponse.data.id))
+      }
+    } catch {
+      localStorage.removeItem('userId')
+    }
+
     ElMessage.success('注册成功，即将为您跳转...')
     window.dispatchEvent(new Event('auth-change'))
-    
+
     setTimeout(() => {
       router.push('/profile-survey')
     }, 1000)
-    
   } catch (error: any) {
-    console.error('注册失败:', error)
     if (error.response) {
-      // 服务器返回错误
-      let msg = '注册失败，请稍后重试';
+      let msg = '注册失败，请稍后重试'
       if (typeof error.response.data === 'string') {
-        msg = error.response.data;
+        msg = error.response.data
       } else if (error.response.data && error.response.data.message) {
-        msg = error.response.data.message;
+        msg = error.response.data.message
       }
       ElMessage.error('注册失败：' + msg)
     } else if (error.request) {
-      // 请求已发送但没有收到响应
       ElMessage.error('注册失败：无法连接到服务器，请检查网络连接')
     } else {
-      // 请求配置出错
       ElMessage.error('注册失败：' + error.message)
     }
   } finally {

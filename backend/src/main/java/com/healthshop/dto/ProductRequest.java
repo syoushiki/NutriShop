@@ -18,6 +18,10 @@ public class ProductRequest {
   @DecimalMin(value = "0.0", inclusive = true, message = "价格不能小于0")
   private BigDecimal price;
 
+  private String tags;
+
+  private String targetAudience;
+
   public String getName() { return name; }
   public void setName(String name) { this.name = name; }
   public String getDescription() { return description; }
@@ -26,4 +30,8 @@ public class ProductRequest {
   public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
   public BigDecimal getPrice() { return price; }
   public void setPrice(BigDecimal price) { this.price = price; }
+  public String getTags() { return tags; }
+  public void setTags(String tags) { this.tags = tags; }
+  public String getTargetAudience() { return targetAudience; }
+  public void setTargetAudience(String targetAudience) { this.targetAudience = targetAudience; }
 }
