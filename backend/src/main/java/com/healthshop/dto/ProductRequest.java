@@ -1,25 +1,23 @@
-package com.healthshop.entity;
+package com.healthshop.dto;
 
-import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "products")
-public class Product {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-  @Column(nullable = false)
+public class ProductRequest {
+  @NotBlank(message = "商品名称不能为空")
   private String name;
-  @Column(length = 2000)
+
   private String description;
-  @Column(name = "image_url")
+
   private String imageUrl;
-  @Column(nullable = false)
+
+  @NotNull(message = "价格不能为空")
+  @DecimalMin(value = "0.0", inclusive = true, message = "价格不能小于0")
   private BigDecimal price;
 
-  public Long getId() { return id; }
-  public void setId(Long id) { this.id = id; }
   public String getName() { return name; }
   public void setName(String name) { this.name = name; }
   public String getDescription() { return description; }

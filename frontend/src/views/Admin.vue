@@ -169,6 +169,19 @@ const openEditDialog = (row: Product) => {
   editFormRef.value?.clearValidate()
 }
 
+const toNullableText = (value?: string) => {
+  if (!value) return null
+  const trimmed = value.trim()
+  return trimmed === '' ? null : trimmed
+}
+
+const buildProductPayload = (form: Product) => ({
+  name: form.name.trim(),
+  price: form.price,
+  description: toNullableText(form.description),
+  imageUrl: toNullableText(form.imageUrl)
+})
+
 const submitAddForm = async () => {
   if (!addFormRef.value) return
   const valid = await addFormRef.value.validate().catch(() => false)
@@ -176,20 +189,18 @@ const submitAddForm = async () => {
 
   addSubmitting.value = true
   try {
-    const payload = { ...addForm.value }
-    if (!payload.imageUrl) {
-      payload.imageUrl = null as any
-    }
+    const payload = buildProductPayload(addForm.value)
     await axios.post('/api/products', payload)
     ElMessage.success('新增成功')
     addDialogVisible.value = false
     await fetchProducts()
   } catch (error: any) {
     console.error('新增失败:', error)
-    if (error.response && error.response.data) {
-        ElMessage.error('新增失败: ' + (error.response.data.message || error.response.statusText || '内部服务器错误'))
+    if (error.response) {
+      const errorMsg = error.response.data?.message || error.response.data || error.response.statusText || '内部服务器错误'
+      ElMessage.error(`新增失败: ${errorMsg} (状态码: ${error.response.status})`)
     } else {
-        ElMessage.error('新增失败')
+      ElMessage.error(`新增失败: ${error.message}`)
     }
   } finally {
     addSubmitting.value = false
@@ -203,20 +214,18 @@ const submitEditForm = async () => {
 
   editSubmitting.value = true
   try {
-    const payload = { ...editForm.value }
-    if (!payload.imageUrl) {
-      payload.imageUrl = null as any
-    }
+    const payload = buildProductPayload(editForm.value)
     await axios.put(`/api/products/${editForm.value.id}`, payload)
     ElMessage.success('修改成功')
     editDialogVisible.value = false
     await fetchProducts()
   } catch (error: any) {
     console.error('修改失败:', error)
-    if (error.response && error.response.data) {
-        ElMessage.error('修改失败: ' + (error.response.data.message || error.response.statusText || '内部服务器错误'))
+    if (error.response) {
+      const errorMsg = error.response.data?.message || error.response.data || error.response.statusText || '内部服务器错误'
+      ElMessage.error(`修改失败: ${errorMsg} (状态码: ${error.response.status})`)
     } else {
-        ElMessage.error('修改失败')
+      ElMessage.error(`修改失败: ${error.message}`)
     }
   } finally {
     editSubmitting.value = false
