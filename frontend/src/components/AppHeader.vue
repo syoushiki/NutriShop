@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <header class="header-shell">
     <div class="top-nav container glass-card">
       <div class="left-links">
@@ -230,6 +230,16 @@ onMounted(() => {
   padding: 0 24px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.search-btn:hover {
+  background: linear-gradient(120deg, var(--brand-700), #219d55);
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+}
+
+.search-btn:active {
+  transform: translateY(1px);
 }
 
 @media (max-width: 1280px) {

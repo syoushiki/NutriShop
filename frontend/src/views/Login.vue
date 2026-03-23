@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="container">
     <div class="card">
       <h2 class="title">用户中心</h2>
@@ -271,7 +271,12 @@ const handleRegister = async () => {
   color: #2f5546;
   font-size: 14px;
   border-radius: 10px;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+}
+
+.tab:hover:not(.active-tab) {
+  background: #eafaf1;
+  color: var(--brand);
 }
 
 .active-tab {
@@ -284,6 +289,7 @@ const handleRegister = async () => {
   font-size: 14px;
   border-radius: 10px;
   box-shadow: 0 8px 16px rgba(37, 184, 104, 0.24);
+  transition: all 0.25s ease;
 }
 
 .input {
@@ -313,6 +319,17 @@ const handleRegister = async () => {
   font-size: 14px;
   font-weight: 600;
   box-shadow: 0 10px 20px rgba(37, 184, 104, 0.22);
+  transition: all 0.25s ease;
+}
+
+.button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #23ad62 0%, #1e9955 100%);
+  box-shadow: 0 12px 24px rgba(37, 184, 104, 0.35);
+  transform: translateY(-1px);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .register-button {

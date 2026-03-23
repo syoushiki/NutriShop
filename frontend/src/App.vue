@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <el-config-provider namespace="ep">
     <el-container>
       <app-header />
@@ -20,6 +20,7 @@ import AppFooter from './components/AppFooter.vue'
   --brand: #2ecc71;
   --brand-700: #27b864;
   --brand-100: #eafaf1;
+  --brand-light: #bdebd0;
   --bg-page: #f6f8f7;
   --bg-card: #ffffff;
   --text-main: #0f172a;
@@ -73,11 +74,41 @@ a {
 .el-button--primary {
   background-color: var(--brand) !important;
   border-color: var(--brand) !important;
+  color: #ffffff !important;
 }
 
 .el-button--primary:hover {
   background-color: var(--brand-700) !important;
   border-color: var(--brand-700) !important;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+.el-button {
+  border-radius: var(--radius-lg) !important;
+  font-weight: 500 !important;
+  transition: all 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.el-button:not(.is-disabled):active {
+  transform: translateY(1px) !important;
+}
+
+.el-button:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info):not(.el-button--text):not(.is-text):not(.is-link):not(.is-disabled):hover {
+  color: var(--brand) !important;
+  border-color: var(--brand-light) !important;
+  background-color: var(--brand-100) !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05) !important;
+  transform: translateY(-1px);
+}
+
+.el-button--danger {
+  transition: all 0.25s ease !important;
+}
+
+.el-button--danger:not(.is-disabled):hover {
+  box-shadow: 0 4px 12px rgba(245, 108, 108, 0.3) !important;
+  transform: translateY(-1px);
 }
 
 .el-input__wrapper,

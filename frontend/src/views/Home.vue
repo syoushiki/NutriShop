@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="home-page">
     <div class="container home-layout">
       <aside class="left-sidebar card-soft">
@@ -23,7 +23,11 @@
         <section class="sidebar-section">
           <div class="slider-head">
             <h3 class="sidebar-title">价格区间</h3>
-            <span>¥{{ priceRange[0] }} - ¥{{ priceRange[1] }}</span>
+          </div>
+          <div class="price-inputs">
+            <el-input-number v-model="priceRange[0]" :min="0" :max="priceRange[1]" :controls="false" placeholder="最低" />
+            <span class="separator">-</span>
+            <el-input-number v-model="priceRange[1]" :min="priceRange[0]" :max="600" :controls="false" placeholder="最高" />
           </div>
           <el-slider v-model="priceRange" range :min="0" :max="600" :step="10" />
           <el-button class="reset-btn" @click="resetFilter">重置筛选</el-button>
@@ -217,18 +221,27 @@ onMounted(loadProducts)
   padding: 6px 12px;
   color: #334155;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+  font-weight: 500;
 }
 
 .chip:hover {
   border-color: #bdebd0;
   background: #f3fcf7;
+  color: var(--brand);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
 }
 
 .chip.active {
   background: var(--brand);
   color: #fff;
   border-color: var(--brand);
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+}
+
+.chip:active {
+  transform: translateY(1px);
 }
 
 .slider-head {
@@ -241,6 +254,25 @@ onMounted(loadProducts)
 .slider-head span {
   color: #64748b;
   font-size: 12px;
+}
+
+.price-inputs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.price-inputs :deep(.el-input-number) {
+  width: 45%;
+}
+
+.price-inputs :deep(.el-input-number .el-input__inner) {
+  text-align: left;
+}
+
+.separator {
+  color: #64748b;
 }
 
 .reset-btn {

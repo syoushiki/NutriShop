@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="detail-page" v-if="product">
     <div class="container">
       <el-card class="hero-card" shadow="never">
@@ -300,11 +300,22 @@ function goDetail(id: number) {
   background: #fff;
   padding: 6px;
   cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.thumb-btn:hover {
+  border-color: #2ecc71;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
+  transform: translateY(-1px);
 }
 
 .thumb-btn.active {
   border-color: #2ecc71;
   box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18);
+}
+
+.thumb-btn:active {
+  transform: translateY(1px);
 }
 
 .thumb-btn img {
