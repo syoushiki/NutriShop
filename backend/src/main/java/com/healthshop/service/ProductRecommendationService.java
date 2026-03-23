@@ -38,7 +38,7 @@ public class ProductRecommendationService {
     }
 
     UserProfile profile = userProfileRepository.findByUserId(userId).orElse(null);
-    if (profile == null) {
+    if (profile == null || !hasSurvey(profile)) {
       return products;
     }
 
@@ -46,11 +46,20 @@ public class ProductRecommendationService {
     for (Product product : products) {
       product.setRelevanceScore(computeRelevanceScore(product, profile, goals));
     }
+
     products.sort(
         Comparator.comparing(Product::getRelevanceScore, Comparator.nullsLast(Comparator.reverseOrder()))
             .thenComparing(Product::getId, Comparator.nullsLast(Long::compareTo))
     );
     return products;
+  }
+
+  private boolean hasSurvey(UserProfile profile) {
+    return notBlank(profile.getAgeGroup()) && notBlank(profile.getGender()) && notBlank(profile.getBudget()) && notBlank(profile.getHealthGoals());
+  }
+
+  private boolean notBlank(String value) {
+    return value != null && !value.trim().isEmpty();
   }
 
   private double computeRelevanceScore(Product product, UserProfile profile, Set<String> goals) {
@@ -122,12 +131,7 @@ public class ProductRecommendationService {
 
     if ("mid".equals(normalizedBudget)) {
       if (price.compareTo(MID_MIN) >= 0 && price.compareTo(MID_MAX) <= 0) return 1.0;
-      BigDecimal distance;
-      if (price.compareTo(MID_MIN) < 0) {
-        distance = MID_MIN.subtract(price);
-      } else {
-        distance = price.subtract(MID_MAX);
-      }
+      BigDecimal distance = price.compareTo(MID_MIN) < 0 ? MID_MIN.subtract(price) : price.subtract(MID_MAX);
       return clamp(1.0 - distance.divide(new BigDecimal("200"), 6, RoundingMode.HALF_UP).doubleValue(), 0.0, 1.0);
     }
 
@@ -150,10 +154,10 @@ public class ProductRecommendationService {
     if ("male".equals(gender) && containsAny(productTags, "fitness", "protein", "energy", "cardio")) {
       boost += 0.08;
     }
-    if ("female".equals(gender) && containsAny(productTags, "sleep", "eyes", "nutrition")) {
+    if ("female".equals(gender) && containsAny(productTags, "sleep", "eyes", "nutrition", "beauty")) {
       boost += 0.05;
     }
-    if ("50+".equals(ageGroup) && containsAny(productTags, "cardio", "bone", "nutrition")) {
+    if ("50+".equals(ageGroup) && containsAny(productTags, "cardio", "bone", "nutrition", "joints")) {
       boost += 0.06;
     }
     return boost;

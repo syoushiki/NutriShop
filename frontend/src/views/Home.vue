@@ -28,6 +28,11 @@
       </aside>
 
       <section class="right-content">
+        <div class="recommend-tip">
+          <div class="tip-title">个性化推荐已启用</div>
+          <div class="tip-subtitle">系统会根据你的年龄、性别、健康诉求和预算自动排序商品。</div>
+        </div>
+
         <div class="top-banner">
           <img src="https://placehold.co/1200x220/131921/ffffff?text=NutriShop" alt="banner" />
         </div>
@@ -227,6 +232,25 @@ onMounted(loadProducts)
 
 .right-content {
   flex: 1;
+}
+
+.recommend-tip {
+  background: linear-gradient(120deg, #0f766e 0%, #0ea5e9 100%);
+  color: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.tip-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.tip-subtitle {
+  font-size: 13px;
+  opacity: 0.92;
+  margin-top: 2px;
 }
 
 .top-banner {

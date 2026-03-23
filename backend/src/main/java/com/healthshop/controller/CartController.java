@@ -45,14 +45,41 @@ public class CartController {
     Integer quantity = Integer.valueOf(String.valueOf(body.getOrDefault("quantity", 1)));
     Product p = productRepo.findById(productId).orElse(null);
     if (p == null) return ResponseEntity.notFound().build();
-    CartItem ci = new CartItem();
-    ci.setUsername(currentUser());
+    String user = currentUser();
+    CartItem ci = cartRepo.findByUsernameAndProductId(user, productId).orElseGet(CartItem::new);
+    ci.setUsername(user);
     ci.setProductId(p.getId());
     ci.setName(p.getName());
     ci.setPrice(p.getPrice());
-    ci.setQuantity(quantity);
+    ci.setQuantity((ci.getQuantity() == null ? 0 : ci.getQuantity()) + Math.max(1, quantity));
     cartRepo.save(ci);
     return ResponseEntity.ok().build();
+  }
+
+  @PutMapping("/{id}/quantity")
+  public ResponseEntity<?> updateQuantity(@PathVariable("id") Long id, @RequestBody Map<String, Object> body) {
+    Integer quantity = Integer.valueOf(String.valueOf(body.getOrDefault("quantity", 1)));
+    return cartRepo.findByIdAndUsername(id, currentUser())
+        .map(item -> {
+          if (quantity <= 0) {
+            cartRepo.delete(item);
+          } else {
+            item.setQuantity(quantity);
+            cartRepo.save(item);
+          }
+          return ResponseEntity.ok().build();
+        })
+        .orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteItem(@PathVariable("id") Long id) {
+    return cartRepo.findByIdAndUsername(id, currentUser())
+        .map(item -> {
+          cartRepo.delete(item);
+          return ResponseEntity.ok().build();
+        })
+        .orElseGet(() -> ResponseEntity.notFound().build());
   }
   @PostMapping("/evaluate")
   public Map<String, Object> evaluate(@RequestBody Map<String, Object> body) {

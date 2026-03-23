@@ -35,65 +35,51 @@ public class DataLoader {
         userRepo.save(user);
       }
 
-      if (repo.count() == 0) {
-        // 心血管分类
-        Product p1 = new Product();
-        p1.setName("深海鱼油软胶囊");
-        p1.setDescription("高纯度Omega-3，辅助调节血脂，维护心血管健康。");
-        p1.setImageUrl("https://placehold.co/600x400/2980b9/ffffff?text=Fish+Oil");
-        p1.setPrice(new BigDecimal("199.00"));
-        p1.setTags("cardio,nutrition");
-        p1.setTargetAudience("all,31-50,50+");
-        repo.save(p1);
+      // cardio: low / mid / high
+      seed(repo, "鱼油基础款", "日常心血管营养补充，适合入门人群。", "https://placehold.co/600x400/1d4ed8/ffffff?text=Fish+Oil+Basic", "89.00", "cardio,nutrition", "all,18-30,31-50");
+      seed(repo, "深海鱼油进阶款", "高纯度 Omega-3，辅助调节血脂。", "https://placehold.co/600x400/0f766e/ffffff?text=Fish+Oil+Pro", "199.00", "cardio,nutrition", "all,31-50,50+");
+      seed(repo, "鱼油尊享装", "更高浓度 EPA/DHA，适合品质需求人群。", "https://placehold.co/600x400/0b3b66/ffffff?text=Fish+Oil+Ultra", "389.00", "cardio,nutrition", "all,31-50,50+");
 
-        Product p2 = new Product();
-        p2.setName("辅酶Q10");
-        p2.setDescription("心脏动力源，增强心肌活力，抗氧化。");
-        p2.setImageUrl("https://placehold.co/600x400/c0392b/ffffff?text=CoQ10");
-        p2.setPrice(new BigDecimal("259.00"));
-        p2.setTags("cardio,energy");
-        p2.setTargetAudience("all,31-50,50+");
-        repo.save(p2);
+      // sleep: low / mid / high
+      seed(repo, "褪黑素轻量版", "帮助缩短入睡时间，温和改善睡眠。", "https://placehold.co/600x400/334155/ffffff?text=Sleep+Lite", "69.00", "sleep,calm", "all,18-30,31-50");
+      seed(repo, "睡眠修复片", "复合成分配方，提升深睡眠质量。", "https://placehold.co/600x400/475569/ffffff?text=Sleep+Pro", "169.00", "sleep,nutrition", "all,31-50,50+");
+      seed(repo, "睡眠高端修护装", "高纯植物舒缓配方，面向高端睡眠需求。", "https://placehold.co/600x400/1e293b/ffffff?text=Sleep+Ultra", "359.00", "sleep,nutrition", "all,female,male,31-50");
 
-        // 护眼分类
-        Product p3 = new Product();
-        p3.setName("蓝莓叶黄素酯片");
-        p3.setDescription("缓解眼疲劳，过滤蓝光，适合长期用眼人群。");
-        p3.setImageUrl("https://placehold.co/600x400/8e44ad/ffffff?text=Lutein");
-        p3.setPrice(new BigDecimal("89.00"));
-        p3.setTags("eyes,sleep");
-        p3.setTargetAudience("all,18-30,31-50");
-        repo.save(p3);
+      // eyes: low / mid / high
+      seed(repo, "叶黄素基础版", "缓解眼疲劳，适合长期用眼。", "https://placehold.co/600x400/7c3aed/ffffff?text=Eyes+Lite", "79.00", "eyes", "all,18-30,31-50");
+      seed(repo, "蓝莓叶黄素复合片", "过滤蓝光，缓解干涩与视疲劳。", "https://placehold.co/600x400/6d28d9/ffffff?text=Eyes+Pro", "189.00", "eyes,nutrition", "all,18-30,31-50");
+      seed(repo, "护眼高端配方", "多重抗氧化营养，面向深度护眼需求。", "https://placehold.co/600x400/4c1d95/ffffff?text=Eyes+Ultra", "329.00", "eyes,nutrition", "all,31-50,50+");
 
-        // 蛋白质/运动分类
-        Product p4 = new Product();
-        p4.setName("乳清蛋白粉");
-        p4.setDescription("快速补充蛋白质，促进肌肉修复与生长。");
-        p4.setImageUrl("https://placehold.co/600x400/27ae60/ffffff?text=Whey+Protein");
-        p4.setPrice(new BigDecimal("328.00"));
-        p4.setTags("fitness,protein,energy");
-        p4.setTargetAudience("all,male,18-30,31-50");
-        repo.save(p4);
+      // fitness: low / mid / high
+      seed(repo, "运动能量凝胶", "训练前后快速补能，轻负担。", "https://placehold.co/600x400/f97316/ffffff?text=Fitness+Lite", "99.00", "fitness,energy", "all,18-30");
+      seed(repo, "乳清蛋白粉", "促进肌肉修复与生长。", "https://placehold.co/600x400/22c55e/ffffff?text=Fitness+Pro", "238.00", "fitness,protein,energy", "all,male,female,18-30,31-50");
+      seed(repo, "健身增肌尊享组合", "高蛋白+支链氨基酸，面向高阶训练。", "https://placehold.co/600x400/15803d/ffffff?text=Fitness+Ultra", "498.00", "fitness,protein,energy", "all,male,18-30,31-50");
 
-        Product p5 = new Product();
-        p5.setName("左旋肉碱");
-        p5.setDescription("配合运动加速脂肪燃烧，提升耐力。");
-        p5.setImageUrl("https://placehold.co/600x400/e67e22/ffffff?text=L-Carnitine");
-        p5.setPrice(new BigDecimal("158.00"));
-        p5.setTags("fitness,energy");
-        p5.setTargetAudience("all,male,female,18-30,31-50");
-        repo.save(p5);
-        
-        // 综合维矿
-        Product p6 = new Product();
-        p6.setName("多维元素片(男士)");
-        p6.setDescription("专为男士设计，补充每日所需22种维生素矿物质。");
-        p6.setImageUrl("https://placehold.co/600x400/f1c40f/333333?text=Multivitamin");
-        p6.setPrice(new BigDecimal("119.00"));
-        p6.setTags("nutrition,energy");
-        p6.setTargetAudience("male,31-50,50+");
-        repo.save(p6);
-      }
+      // nutrition / beauty / joints high differentiation
+      seed(repo, "多维元素片（男士）", "专为男士设计，补充日常维生素和矿物质。", "https://placehold.co/600x400/f59e0b/333333?text=Multivitamin+Men", "119.00", "nutrition,energy", "male,31-50,50+");
+      seed(repo, "多维元素片（女士）", "面向女性日常营养补充。", "https://placehold.co/600x400/f43f5e/ffffff?text=Multivitamin+Women", "129.00", "nutrition,beauty", "female,18-30,31-50");
+      seed(repo, "胶原蛋白肽高端款", "精致养护与抗氧化支持。", "https://placehold.co/600x400/e11d48/ffffff?text=Collagen+Ultra", "458.00", "beauty,nutrition", "female,31-50,50+");
+      seed(repo, "关节灵活配方", "针对中老年关节活动支持。", "https://placehold.co/600x400/6b4f3a/ffffff?text=Joint+Support", "268.00", "joints,bone,cardio", "all,50+");
     };
+  }
+
+  private void seed(ProductRepository repo,
+                    String name,
+                    String description,
+                    String imageUrl,
+                    String price,
+                    String tags,
+                    String targetAudience) {
+    boolean exists = repo.findAll().stream().anyMatch(p -> name.equals(p.getName()));
+    if (exists) return;
+
+    Product product = new Product();
+    product.setName(name);
+    product.setDescription(description);
+    product.setImageUrl(imageUrl);
+    product.setPrice(new BigDecimal(price));
+    product.setTags(tags);
+    product.setTargetAudience(targetAudience);
+    repo.save(product);
   }
 }

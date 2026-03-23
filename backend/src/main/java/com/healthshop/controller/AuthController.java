@@ -3,6 +3,7 @@ package com.healthshop.controller;
 import com.healthshop.dto.AuthDtos.LoginRequest;
 import com.healthshop.dto.AuthDtos.RegisterRequest;
 import com.healthshop.dto.AuthDtos.TokenResponse;
+import com.healthshop.dto.AuthDtos.UpdateAddressRequest;
 import com.healthshop.entity.User;
 import com.healthshop.repo.UserRepository;
 import com.healthshop.security.JwtUtil;
@@ -20,6 +21,7 @@ public class AuthController {
   private final UserRepository userRepository;
   private final PasswordEncoder encoder;
   private final JwtUtil jwtUtil;
+
   public AuthController(UserRepository userRepository, PasswordEncoder encoder, JwtUtil jwtUtil) {
     this.userRepository = userRepository;
     this.encoder = encoder;
@@ -37,6 +39,7 @@ public class AuthController {
     if (userRepository.findByPhone(req.getPhone()).isPresent()) {
       return ResponseEntity.badRequest().body("Phone number is already registered");
     }
+
     User u = new User();
     u.setUsername(req.getUsername());
     u.setPassword(encoder.encode(req.getPassword()));
@@ -44,6 +47,7 @@ public class AuthController {
     u.setPhone(req.getPhone());
     u.setRole(Role.USER);
     userRepository.save(u);
+
     String token = jwtUtil.generateToken(u.getUsername());
     return ResponseEntity.ok(new TokenResponse(token));
   }
@@ -58,8 +62,9 @@ public class AuthController {
 
   @GetMapping("/me")
   public ResponseEntity<?> me(@RequestHeader("Authorization") String authorization) {
-    String token = authorization != null && authorization.startsWith("Bearer ") ? authorization.substring(7) : null;
+    String token = extractToken(authorization);
     if (token == null) return ResponseEntity.status(401).build();
+
     String subject = jwtUtil.getSubject(token);
     return userRepository.findByUsername(subject)
         .map(user -> ResponseEntity.ok(Map.of(
@@ -67,8 +72,41 @@ public class AuthController {
             "username", user.getUsername(),
             "email", user.getEmail() == null ? "" : user.getEmail(),
             "phone", user.getPhone() == null ? "" : user.getPhone(),
+            "address", user.getAddress() == null ? "" : user.getAddress(),
             "role", user.getRole()
         )))
         .orElseGet(() -> ResponseEntity.status(401).build());
+  }
+
+  @PutMapping("/me/address")
+  public ResponseEntity<?> updateAddress(@RequestHeader("Authorization") String authorization,
+                                         @RequestBody @Valid UpdateAddressRequest request) {
+    String token = extractToken(authorization);
+    if (token == null) return ResponseEntity.status(401).build();
+
+    String subject = jwtUtil.getSubject(token);
+    return userRepository.findByUsername(subject)
+        .map(user -> {
+          user.setAddress(normalizeNullableText(request.getAddress()));
+          userRepository.save(user);
+          return ResponseEntity.ok(Map.of(
+              "id", user.getId(),
+              "address", user.getAddress() == null ? "" : user.getAddress()
+          ));
+        })
+        .orElseGet(() -> ResponseEntity.status(401).build());
+  }
+
+  private String extractToken(String authorization) {
+    if (authorization == null || !authorization.startsWith("Bearer ")) {
+      return null;
+    }
+    return authorization.substring(7);
+  }
+
+  private String normalizeNullableText(String value) {
+    if (value == null) return null;
+    String trimmed = value.trim();
+    return trimmed.isEmpty() ? null : trimmed;
   }
 }

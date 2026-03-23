@@ -27,23 +27,26 @@ public class UserProfileController {
   public ResponseEntity<UserProfile> upsert(@Valid @RequestBody UserProfileRequest request) {
     UserProfile profile = userProfileRepository.findByUserId(request.getUserId()).orElseGet(UserProfile::new);
     profile.setUserId(request.getUserId());
-    profile.setAgeGroup(normalizeRequired(request.getAgeGroup()));
-    profile.setGender(normalizeRequired(request.getGender()));
-    profile.setBudget(normalizeRequired(request.getBudget()));
-    profile.setHealthGoals(request.getHealthGoals().stream()
-        .map(this::normalizeRequired)
+    profile.setAgeGroup(normalizeNullableText(request.getAgeGroup()));
+    profile.setGender(normalizeNullableText(request.getGender()));
+    profile.setBudget(normalizeNullableText(request.getBudget()));
+    profile.setHealthGoals(request.getHealthGoals() == null ? null : request.getHealthGoals().stream()
+        .map(this::normalizeNullableText)
+        .filter(v -> v != null && !v.isEmpty())
         .collect(Collectors.joining(",")));
     return ResponseEntity.ok(userProfileRepository.save(profile));
   }
 
   @GetMapping("/{userId}")
-  public ResponseEntity<UserProfile> getByUserId(@PathVariable Long userId) {
+  public ResponseEntity<UserProfile> getByUserId(@PathVariable("userId") Long userId) {
     return userProfileRepository.findByUserId(userId)
         .map(ResponseEntity::ok)
         .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
-  private String normalizeRequired(String value) {
-    return value == null ? "" : value.trim();
+  private String normalizeNullableText(String value) {
+    if (value == null) return null;
+    String trimmed = value.trim();
+    return trimmed.isEmpty() ? null : trimmed;
   }
 }

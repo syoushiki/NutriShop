@@ -1,11 +1,12 @@
-﻿CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE,
     phone VARCHAR(255) UNIQUE,
     role VARCHAR(50) NOT NULL,
-    enabled BOOLEAN DEFAULT TRUE
+    enabled BOOLEAN DEFAULT TRUE,
+    address VARCHAR(500)
 );
 
 CREATE TABLE IF NOT EXISTS products (
@@ -30,10 +31,10 @@ CREATE TABLE IF NOT EXISTS cart_items (
 CREATE TABLE IF NOT EXISTS user_profiles (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL UNIQUE,
-    age_group VARCHAR(50) NOT NULL,
-    gender VARCHAR(50) NOT NULL,
+    age_group VARCHAR(50),
+    gender VARCHAR(50),
     health_goals VARCHAR(500),
-    budget VARCHAR(50) NOT NULL,
+    budget VARCHAR(50),
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL
 );

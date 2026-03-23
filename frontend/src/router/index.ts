@@ -5,6 +5,7 @@ import Cart from '../views/Cart.vue'
 import Login from '../views/Login.vue'
 import Admin from '../views/Admin.vue'
 import ProfileSurvey from '../views/ProfileSurvey.vue'
+import UserProfile from '../views/UserProfile.vue'
 
 const routes = [
   { path: '/', component: Home },
@@ -12,7 +13,8 @@ const routes = [
   { path: '/cart', component: Cart },
   { path: '/login', component: Login },
   { path: '/admin', component: Admin },
-  { path: '/profile-survey', component: ProfileSurvey }
+  { path: '/profile-survey', component: ProfileSurvey },
+  { path: '/profile', component: UserProfile }
 ]
 
 const router = createRouter({

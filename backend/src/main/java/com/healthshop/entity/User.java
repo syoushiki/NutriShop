@@ -9,18 +9,27 @@ public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
+
   @Column(unique = true, nullable = false)
   private String username;
+
   @Column(unique = true)
   private String phone;
+
   @Column(unique = true)
   private String email;
+
   @Column(nullable = false)
   private String password;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private Role role = Role.USER;
+
   private Boolean enabled = true;
+
+  @Column(length = 500)
+  private String address;
 
   public Long getId() { return id; }
   public void setId(Long id) { this.id = id; }
@@ -36,4 +45,6 @@ public class User {
   public void setRole(Role role) { this.role = role; }
   public Boolean getEnabled() { return enabled; }
   public void setEnabled(Boolean enabled) { this.enabled = enabled; }
+  public String getAddress() { return address; }
+  public void setAddress(String address) { this.address = address; }
 }

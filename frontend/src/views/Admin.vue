@@ -11,6 +11,28 @@
         </div>
       </div>
 
+      <div class="dictionary-wrapper">
+        <el-card shadow="never" class="dictionary-card">
+          <template #header>
+            <div class="dict-title">Tags 对照表（用于 healthGoals 匹配）</div>
+          </template>
+          <el-table :data="tagDictionary" size="small" border>
+            <el-table-column prop="tag" label="tag" width="140" />
+            <el-table-column prop="meaning" label="含义" />
+            <el-table-column prop="scene" label="典型商品类型" />
+          </el-table>
+        </el-card>
+        <el-card shadow="never" class="dictionary-card">
+          <template #header>
+            <div class="dict-title">targetAudience 对照表</div>
+          </template>
+          <el-table :data="audienceDictionary" size="small" border>
+            <el-table-column prop="token" label="token" width="140" />
+            <el-table-column prop="meaning" label="含义" />
+          </el-table>
+        </el-card>
+      </div>
+
       <el-table :data="products" v-loading="loading" class="admin-table">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="name" label="商品名称" min-width="160" />
@@ -150,6 +172,27 @@ const rules: FormRules<Product> = {
   name: [{ required: true, message: '请输入商品名称', trigger: 'blur' }],
   price: [{ required: true, message: '请输入价格', trigger: 'change' }]
 }
+
+const tagDictionary = [
+  { tag: 'sleep', meaning: '睡眠改善', scene: '褪黑素、安神类' },
+  { tag: 'eyes', meaning: '护眼', scene: '叶黄素、蓝莓类' },
+  { tag: 'fitness', meaning: '健身塑形', scene: '运动营养类' },
+  { tag: 'nutrition', meaning: '综合营养', scene: '多维、矿物质类' },
+  { tag: 'cardio', meaning: '心血管支持', scene: '鱼油、辅酶Q10类' },
+  { tag: 'energy', meaning: '精力补充', scene: '提神补能类' },
+  { tag: 'beauty', meaning: '养颜抗衰', scene: '胶原蛋白类' },
+  { tag: 'joints', meaning: '关节支持', scene: '关节灵活类' },
+  { tag: 'bone', meaning: '骨骼支持', scene: '钙/骨骼营养类' }
+]
+
+const audienceDictionary = [
+  { token: 'all', meaning: '通用人群' },
+  { token: 'male', meaning: '男性' },
+  { token: 'female', meaning: '女性' },
+  { token: '18-30', meaning: '18-30岁' },
+  { token: '31-50', meaning: '31-50岁' },
+  { token: '50+', meaning: '50岁及以上' }
+]
 
 const fetchProducts = async () => {
   loading.value = true
@@ -293,6 +336,21 @@ onMounted(fetchProducts)
   width: 100%;
 }
 
+.dictionary-wrapper {
+  margin-bottom: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.dictionary-card {
+  border-radius: 10px;
+}
+
+.dict-title {
+  font-weight: 600;
+}
+
 .product-img {
   width: 48px;
   height: 48px;
@@ -320,6 +378,10 @@ onMounted(fetchProducts)
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+
+  .dictionary-wrapper {
+    grid-template-columns: 1fr;
   }
 }
 </style>

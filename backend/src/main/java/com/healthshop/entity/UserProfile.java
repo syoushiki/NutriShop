@@ -21,16 +21,16 @@ public class UserProfile {
   @Column(name = "user_id", nullable = false, unique = true)
   private Long userId;
 
-  @Column(name = "age_group", nullable = false, length = 50)
+  @Column(name = "age_group", length = 50)
   private String ageGroup;
 
-  @Column(nullable = false, length = 50)
+  @Column(length = 50)
   private String gender;
 
   @Column(name = "health_goals", length = 500)
   private String healthGoals;
 
-  @Column(nullable = false, length = 50)
+  @Column(length = 50)
   private String budget;
 
   @Column(name = "created_at", nullable = false)
