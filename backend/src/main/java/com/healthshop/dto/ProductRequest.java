@@ -13,6 +13,7 @@ public class ProductRequest {
   private String description;
 
   private String imageUrl;
+  private String imageGallery;
 
   @NotNull(message = "价格不能为空")
   @DecimalMin(value = "0.0", inclusive = true, message = "价格不能小于0")
@@ -28,6 +29,8 @@ public class ProductRequest {
   public void setDescription(String description) { this.description = description; }
   public String getImageUrl() { return imageUrl; }
   public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+  public String getImageGallery() { return imageGallery; }
+  public void setImageGallery(String imageGallery) { this.imageGallery = imageGallery; }
   public BigDecimal getPrice() { return price; }
   public void setPrice(BigDecimal price) { this.price = price; }
   public String getTags() { return tags; }

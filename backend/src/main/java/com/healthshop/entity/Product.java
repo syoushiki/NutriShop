@@ -15,6 +15,9 @@ public class Product {
   private String description;
   @Column(name = "image_url")
   private String imageUrl;
+  @Lob
+  @Column(name = "image_gallery")
+  private String imageGallery;
   @Column(nullable = false)
   private BigDecimal price;
   @Column(length = 500)
@@ -32,6 +35,8 @@ public class Product {
   public void setDescription(String description) { this.description = description; }
   public String getImageUrl() { return imageUrl; }
   public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+  public String getImageGallery() { return imageGallery; }
+  public void setImageGallery(String imageGallery) { this.imageGallery = imageGallery; }
   public BigDecimal getPrice() { return price; }
   public void setPrice(BigDecimal price) { this.price = price; }
   public String getTags() { return tags; }

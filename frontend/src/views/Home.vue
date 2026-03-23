@@ -1,58 +1,62 @@
 ﻿<template>
-  <div class="nutrishop-home-container">
-    <div class="main-content container">
-      <aside class="left-sidebar">
-        <div class="sidebar-section">
-          <h3 class="sidebar-title">商品分类</h3>
-          <ul class="category-list">
-            <li>心血管健康</li>
-            <li>视力护眼</li>
-            <li>运动营养</li>
-            <li>综合维矿</li>
-            <li>睡眠改善</li>
-          </ul>
-        </div>
+  <div class="home-page">
+    <div class="container home-layout">
+      <aside class="left-sidebar card-soft">
+        <section class="sidebar-section">
+          <h3 class="sidebar-title">分类筛选</h3>
+          <div class="chip-wrap">
+            <button
+              class="chip"
+              :class="{ active: activeCategory === 'all' }"
+              @click="activeCategory = 'all'"
+            >全部</button>
+            <button
+              v-for="c in categories"
+              :key="c.key"
+              class="chip"
+              :class="{ active: activeCategory === c.key }"
+              @click="activeCategory = c.key"
+            >{{ c.label }}</button>
+          </div>
+        </section>
 
-        <div class="sidebar-section">
-          <h3 class="sidebar-title">价格区间</h3>
-          <el-form :model="priceForm" :rules="priceRules" ref="priceFormRef">
-            <el-form-item label="最低价格" prop="prodBegin">
-              <el-input v-model="priceForm.prodBegin" placeholder="最低" />
-            </el-form-item>
-            <el-form-item label="最高价格" prop="prodEnd">
-              <el-input v-model="priceForm.prodEnd" placeholder="最高" />
-            </el-form-item>
-            <el-button type="primary" size="small" @click="applyPriceFilter" class="apply-btn">应用</el-button>
-          </el-form>
-        </div>
+        <section class="sidebar-section">
+          <div class="slider-head">
+            <h3 class="sidebar-title">价格区间</h3>
+            <span>¥{{ priceRange[0] }} - ¥{{ priceRange[1] }}</span>
+          </div>
+          <el-slider v-model="priceRange" range :min="0" :max="600" :step="10" />
+          <el-button class="reset-btn" @click="resetFilter">重置筛选</el-button>
+        </section>
       </aside>
 
       <section class="right-content">
-        <div class="recommend-tip">
-          <div class="tip-title">个性化推荐已启用</div>
-          <div class="tip-subtitle">系统会根据你的年龄、性别、健康诉求和预算自动排序商品。</div>
+        <div class="recommend-tip card-soft">
+          <div class="tip-title">个性推荐模型运行中</div>
+          <div class="tip-subtitle">系统依据年龄、性别、健康诉求与预算综合打分，优先展示更匹配商品。</div>
         </div>
 
-        <div class="top-banner">
-          <img src="https://placehold.co/1200x220/131921/ffffff?text=NutriShop" alt="banner" />
+        <div class="top-banner card-soft">
+          <img src="https://placehold.co/1200x220/eafaf1/0f5132?text=NutriShop+Personalized+Recommendations" alt="banner" />
         </div>
 
-        <div class="sort-filter">
-          <div class="sort-options">
-            <span>排序方式：</span>
+        <div class="sort-bar card-soft">
+          <div class="left">
+            <span class="sort-label">排序</span>
             <select v-model="sortBy" class="sort-select">
               <option value="default">综合排序</option>
               <option value="price_asc">价格从低到高</option>
               <option value="price_desc">价格从高到低</option>
             </select>
           </div>
+          <div class="count">共 {{ displayedProducts.length }} 件</div>
         </div>
 
-        <div class="products-grid">
+        <transition-group name="fade-up" tag="div" class="products-grid">
           <div class="product-item" v-for="p in displayedProducts" :key="p.id">
             <product-card :item="p" @view="go" @add="add" />
           </div>
-        </div>
+        </transition-group>
       </section>
     </div>
   </div>
@@ -61,63 +65,30 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import axios from 'axios'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import ProductCard from '../components/ProductCard.vue'
 
 const products = ref<any[]>([])
 const router = useRouter()
+const route = useRoute()
 
 const sortBy = ref('default')
+const activeCategory = ref('all')
+const priceRange = ref<[number, number]>([0, 600])
 
-const priceForm = ref({
-  prodBegin: '0',
-  prodEnd: '999999'
-})
-const priceFormRef = ref<any>(null)
-const priceFilterApplied = ref(false)
+const categories = [
+  { key: 'cardio', label: '心血管健康' },
+  { key: 'eyes', label: '视力护眼' },
+  { key: 'fitness', label: '运动营养' },
+  { key: 'nutrition', label: '综合维矿' },
+  { key: 'sleep', label: '睡眠改善' }
+]
 
-const isComplexMoney = (value: string): boolean => {
-  const reg = /(^0$)|(^[1-9]\d{0,6}$)|(^[1-9]\d{0,6}\.\d{1,2}$)/
-  return reg.test(value)
-}
-
-const priceRules = {
-  prodBegin: [{
-    validator: (_rule: any, value: string, callback: any) => {
-      if (!isComplexMoney(value)) {
-        callback(new Error('请输入正确格式的金额'))
-      } else if (Number(value) >= Number(priceForm.value.prodEnd)) {
-        callback(new Error('最低价格必须小于最高价格'))
-      } else {
-        callback()
-      }
-    },
-    trigger: 'change'
-  }],
-  prodEnd: [{
-    validator: (_rule: any, value: string, callback: any) => {
-      if (!isComplexMoney(value)) {
-        callback(new Error('请输入正确格式的金额'))
-      } else if (Number(priceForm.value.prodBegin) >= Number(value)) {
-        callback(new Error('最高价格必须大于最低价格'))
-      } else {
-        callback()
-      }
-    },
-    trigger: 'change'
-  }]
-}
-
-function applyPriceFilter() {
-  priceFormRef.value.validate((valid: boolean) => {
-    if (valid) {
-      priceFilterApplied.value = true
-      ElMessage.success('价格过滤已应用')
-    } else {
-      ElMessage.error('请输入正确的价格区间')
-    }
-  })
+function resetFilter() {
+  activeCategory.value = 'all'
+  priceRange.value = [0, 600]
+  sortBy.value = 'default'
 }
 
 function go(id: number) {
@@ -135,9 +106,7 @@ async function add(id: number) {
 
 const resolveUserId = async (): Promise<number | null> => {
   const rawUserId = Number(localStorage.getItem('userId'))
-  if (Number.isFinite(rawUserId) && rawUserId > 0) {
-    return rawUserId
-  }
+  if (Number.isFinite(rawUserId) && rawUserId > 0) return rawUserId
 
   const token = localStorage.getItem('token')
   if (!token) return null
@@ -154,20 +123,31 @@ const resolveUserId = async (): Promise<number | null> => {
   return null
 }
 
+const normalizeTags = (raw?: string) => {
+  if (!raw) return [] as string[]
+  return String(raw).split(',').map((s) => s.trim()).filter(Boolean)
+}
+
 const loadProducts = async () => {
   const userId = await resolveUserId()
   const url = userId ? `/api/products/recommend?userId=${userId}` : '/api/products'
   const { data } = await axios.get(url)
-  products.value = data
+  products.value = data || []
 }
 
 const displayedProducts = computed(() => {
   let result = [...products.value]
 
-  if (priceFilterApplied.value) {
-    const min = Number(priceForm.value.prodBegin)
-    const max = Number(priceForm.value.prodEnd)
-    result = result.filter((p) => Number(p.price) >= min && Number(p.price) <= max)
+  const q = String(route.query.q || '').trim().toLowerCase()
+  if (q) {
+    result = result.filter((p) => String(p.name || '').toLowerCase().includes(q))
+  }
+
+  const [min, max] = priceRange.value
+  result = result.filter((p) => Number(p.price) >= min && Number(p.price) <= max)
+
+  if (activeCategory.value !== 'all') {
+    result = result.filter((p) => normalizeTags(p.tags).includes(activeCategory.value))
   }
 
   if (sortBy.value === 'price_asc') {
@@ -183,9 +163,10 @@ onMounted(loadProducts)
 </script>
 
 <style scoped>
-.nutrishop-home-container {
-  background-color: #f5f5f5;
-  min-height: 800px;
+.home-page {
+  background: var(--bg-page);
+  min-height: 100vh;
+  padding: 22px 0 28px;
 }
 
 .container {
@@ -193,69 +174,106 @@ onMounted(loadProducts)
   margin: 0 auto;
 }
 
-.main-content {
-  padding: 20px 0;
+.home-layout {
   display: flex;
-  gap: 20px;
+  gap: 22px;
+}
+
+.card-soft {
+  background: var(--bg-card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-soft);
 }
 
 .left-sidebar {
-  width: 240px;
-  background-color: #fff;
-  border-radius: 8px;
+  width: 268px;
   padding: 16px;
+  height: fit-content;
+  position: sticky;
+  top: 126px;
 }
 
-.sidebar-section {
-  margin-bottom: 20px;
+.sidebar-section + .sidebar-section {
+  margin-top: 18px;
 }
 
 .sidebar-title {
-  font-size: 16px;
-  margin-bottom: 10px;
+  font-size: 15px;
+  margin: 0 0 10px;
+  color: #1f2937;
 }
 
-.category-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.chip-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.category-list li {
-  line-height: 28px;
-  color: #555;
+.chip {
+  border: 1px solid var(--line-soft);
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.apply-btn {
+.chip:hover {
+  border-color: #bdebd0;
+  background: #f3fcf7;
+}
+
+.chip.active {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
+
+.slider-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.slider-head span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.reset-btn {
   width: 100%;
+  margin-top: 10px;
+  border-radius: 10px;
 }
 
 .right-content {
   flex: 1;
+  min-width: 0;
 }
 
 .recommend-tip {
-  background: linear-gradient(120deg, #0f766e 0%, #0ea5e9 100%);
-  color: #fff;
-  border-radius: 12px;
   padding: 14px 16px;
   margin-bottom: 14px;
+  background: linear-gradient(120deg, rgba(46, 204, 113, 0.12), rgba(34, 197, 94, 0.08));
 }
 
 .tip-title {
   font-size: 16px;
   font-weight: 700;
+  color: #0f5132;
 }
 
 .tip-subtitle {
+  margin-top: 4px;
+  color: #3f6b59;
   font-size: 13px;
-  opacity: 0.92;
-  margin-top: 2px;
 }
 
 .top-banner {
-  margin-bottom: 16px;
-  border-radius: 8px;
+  margin-bottom: 14px;
   overflow: hidden;
 }
 
@@ -264,51 +282,73 @@ onMounted(loadProducts)
   display: block;
 }
 
-.sort-filter {
-  background: #fff;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 16px;
+.sort-bar {
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.sort-options {
+.sort-bar .left {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
+.sort-label {
+  color: #64748b;
+}
+
 .sort-select {
-  border: 1px solid #dcdfe6;
-  border-radius: 6px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
   padding: 6px 10px;
+  color: #334155;
+  background: #fff;
+}
+
+.count {
+  color: #64748b;
+  font-size: 13px;
 }
 
 .products-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 18px;
 }
 
 .product-item {
-  background-color: #fff;
-  border-radius: 8px;
-  overflow: hidden;
+  min-width: 0;
+}
+
+.fade-up-enter-active,
+.fade-up-leave-active {
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.fade-up-enter-from,
+.fade-up-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
 }
 
 @media (max-width: 1280px) {
   .container {
     width: 100%;
-    padding: 0 16px;
+    padding: 0 14px;
   }
 }
 
 @media (max-width: 960px) {
-  .main-content {
+  .home-layout {
     flex-direction: column;
   }
 
   .left-sidebar {
     width: 100%;
+    position: static;
   }
 
   .products-grid {

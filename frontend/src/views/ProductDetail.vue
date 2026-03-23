@@ -1,346 +1,495 @@
-<template>
-  <div class="product-detail-container" v-if="product">
-    <el-card class="detail-card">
-      <el-row :gutter="40">
-        <!-- 左侧图片区 -->
-        <el-col :span="10">
-          <div class="main-image-box">
-            <img :src="currentImage || product.imageUrl" class="main-image" />
-          </div>
-          <el-row :gutter="10" class="thumbnail-list">
-            <el-col :span="5" v-for="(img, index) in thumbnails" :key="index">
-              <div 
-                class="thumbnail-item" 
+﻿<template>
+  <div class="detail-page" v-if="product">
+    <div class="container">
+      <el-card class="hero-card" shadow="never">
+        <div class="hero-grid">
+          <section class="media-col">
+            <div class="main-image-box">
+              <img :src="currentImage || product.imageUrl" class="main-image" :alt="product.name" />
+            </div>
+            <div class="thumbs">
+              <button
+                v-for="(img, index) in thumbnails"
+                :key="index"
+                class="thumb-btn"
                 :class="{ active: currentImage === img }"
                 @mouseenter="currentImage = img"
+                @click="currentImage = img"
               >
-                <img :src="img" />
-              </div>
-            </el-col>
-          </el-row>
+                <img :src="img" :alt="`thumb-${index}`" />
+              </button>
+            </div>
+          </section>
+
+          <section class="info-col">
+            <h1 class="title">{{ product.name }}</h1>
+            <p class="subtitle">{{ product.description || '高品质营养补充，建议根据个人情况科学食用。' }}</p>
+
+            <div class="meta-row">
+              <span class="meta-pill" v-if="product.relevanceScore !== undefined">匹配度 {{ Math.round(product.relevanceScore * 100) }}%</span>
+              <span class="meta-pill soft">正品保障</span>
+              <span class="meta-pill soft">极速发货</span>
+            </div>
+
+            <div class="tag-row" v-if="normalizedTags.length">
+              <span v-for="t in normalizedTags" :key="t" class="tag">{{ t }}</span>
+            </div>
+
+            <div class="price-card">
+              <div class="label">到手价</div>
+              <div class="price">¥{{ Number(product.price || 0).toFixed(2) }}</div>
+              <div class="note">支持七天无理由退换</div>
+            </div>
+
+            <div class="purchase-row">
+              <span class="field-label">数量</span>
+              <el-input-number v-model="qty" :min="1" :max="99" />
+              <span class="stock">库存充足</span>
+            </div>
+
+            <div class="actions">
+              <el-button type="primary" size="large" @click="addToCart">加入购物车</el-button>
+              <el-button type="danger" size="large" @click="buyNow">立即购买</el-button>
+            </div>
+          </section>
+        </div>
+      </el-card>
+
+      <el-row :gutter="16" class="content-row">
+        <el-col :xs="24" :md="6">
+          <el-card class="side-card" shadow="never">
+            <template #header>
+              <div class="side-title">高权重个性推荐</div>
+            </template>
+            <div v-for="item in recommendList" :key="item.id" class="side-item" @click="goDetail(item.id)">
+              <img :src="item.imageUrl || 'https://placehold.co/180x140/f8fafc/64748b?text=No+Image'" />
+              <div class="side-name">{{ item.name }}</div>
+              <div class="side-price">¥{{ Number(item.price || 0).toFixed(2) }}</div>
+            </div>
+            <el-empty v-if="recommendList.length === 0" description="暂无推荐" />
+          </el-card>
         </el-col>
 
-        <!-- 右侧信息区 -->
-        <el-col :span="14">
-          <h1 class="product-title">{{ product.name }}</h1>
-          <p class="product-subtitle">{{ product.description }}</p>
-          
-          <div class="price-panel">
-            <div class="price-label">价格</div>
-            <div class="price-value">
-              <span class="currency">¥</span>
-              <span class="amount">{{ product.price }}</span>
-            </div>
-            <div class="promo-tag">新品上市</div>
-          </div>
+        <el-col :xs="24" :md="18">
+          <el-card class="tabs-card" shadow="never">
+            <el-tabs v-model="activeTab">
+              <el-tab-pane label="商品详情" name="detail">
+                <div class="desc-block">
+                  <el-alert title="温馨提示：保健品不能代替药物治疗" type="warning" show-icon :closable="false" />
+                  <p>{{ product.description || '暂无详细介绍' }}</p>
+                  <img src="https://placehold.co/900x360/e2e8f0/1e293b?text=Detail+Banner" />
+                </div>
+              </el-tab-pane>
 
-          <div class="sku-panel">
-            <div class="sku-row">
-              <span class="sku-label">规格</span>
-              <el-radio-group v-model="selectedSku" size="large">
-                <el-radio-button label="默认规格" />
-                <el-radio-button label="礼盒装" disabled />
-              </el-radio-group>
-            </div>
-            
-            <div class="sku-row">
-              <span class="sku-label">数量</span>
-              <el-input-number v-model="qty" :min="1" :max="99" />
-              <span class="stock-info">库存充足</span>
-            </div>
-          </div>
+              <el-tab-pane label="营养成分" name="nutrition">
+                <el-table :data="nutritionData" border>
+                  <el-table-column prop="name" label="成分" width="220" />
+                  <el-table-column prop="amount" label="每份含量" />
+                  <el-table-column prop="nrv" label="NRV%" width="120" />
+                </el-table>
+              </el-tab-pane>
 
-          <div class="action-panel">
-            <el-button type="warning" size="large" plain @click="addToCart">加入购物车</el-button>
-            <el-button type="danger" size="large" @click="buyNow">立即购买</el-button>
-          </div>
-          
-          <div class="service-guarantee">
-            <span><el-icon><CircleCheck /></el-icon> 正品保障</span>
-            <span><el-icon><Van /></el-icon> 极速发货</span>
-            <span><el-icon><Service /></el-icon> 售后无忧</span>
-          </div>
+              <el-tab-pane label="用户评价" name="comments">
+                <div v-for="i in 3" :key="i" class="comment-item">
+                  <div class="comment-head">
+                    <el-avatar :size="30" icon="UserFilled" />
+                    <span>用户***{{ i }}</span>
+                    <el-rate :model-value="5" disabled size="small" />
+                  </div>
+                  <div class="comment-body">口感不错，物流很快，体验很好。</div>
+                </div>
+              </el-tab-pane>
+            </el-tabs>
+          </el-card>
         </el-col>
       </el-row>
-    </el-card>
-
-    <!-- 下方详情Tabs -->
-    <el-row :gutter="20" style="margin-top: 20px;">
-      <el-col :span="5">
-        <el-card class="recommend-sidebar">
-          <template #header>
-            <div class="sidebar-header">看了又看</div>
-          </template>
-          <!-- 侧边栏推荐占位 -->
-           <div v-for="i in 3" :key="i" class="sidebar-item">
-             <div class="sidebar-img-box">
-               <img :src="`https://placehold.co/150x150/f5f5f5/ccc?text=Item+${i}`" />
-             </div>
-             <div class="sidebar-name">推荐商品 {{i}}</div>
-             <div class="sidebar-price">¥{{ 99 * i }}</div>
-           </div>
-        </el-card>
-      </el-col>
-      <el-col :span="19">
-        <el-card class="detail-tabs-card">
-          <el-tabs v-model="activeTab">
-            <el-tab-pane label="商品详情" name="detail">
-              <div class="product-intro-images">
-                 <el-alert title="温馨提示：本品不能代替药物" type="warning" show-icon style="margin-bottom:20px" />
-                 <img src="https://placehold.co/800x400/eef4ff/333?text=Product+Feature+1" style="width:100%;margin-bottom:10px" />
-                 <img src="https://placehold.co/800x400/fff3e8/333?text=Product+Feature+2" style="width:100%;margin-bottom:10px" />
-                 <img src="https://placehold.co/800x600/f5fff0/333?text=Usage+Instruction" style="width:100%" />
-              </div>
-            </el-tab-pane>
-            <el-tab-pane label="营养成分" name="nutrition">
-              <el-table :data="product.nutrition || []" border style="width: 100%">
-                <el-table-column prop="name" label="营养成分" width="180" />
-                <el-table-column prop="amount" label="每份含量" />
-                <el-table-column prop="nrv" label="NRV%" width="120">
-                  <template #default>--</template>
-                </el-table-column>
-              </el-table>
-            </el-tab-pane>
-            <el-tab-pane label="用户评价 (99+)" name="comments">
-              <div class="comment-item" v-for="i in 3" :key="i">
-                <div class="comment-user">
-                  <el-avatar :size="32" icon="UserFilled" />
-                  <span class="username">用户***{{i}}</span>
-                  <el-rate v-model="rateValue" disabled text-color="#ff9900" />
-                </div>
-                <div class="comment-content">效果不错，发货很快！</div>
-                <div class="comment-date">2023-10-{{10+i}}</div>
-                <el-divider />
-              </div>
-            </el-tab-pane>
-            <el-tab-pane label="问大家" name="qa">
-              <el-empty description="暂无提问" />
-            </el-tab-pane>
-          </el-tabs>
-        </el-card>
-      </el-col>
-    </el-row>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import axios from 'axios'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { CircleCheck, Van, Service, UserFilled } from '@element-plus/icons-vue'
 
 const route = useRoute()
+const router = useRouter()
 const product = ref<any>(null)
 const qty = ref(1)
 const activeTab = ref('detail')
-const selectedSku = ref('默认规格')
 const currentImage = ref('')
-const rateValue = ref(5)
+const recommendList = ref<any[]>([])
 
-// 模拟缩略图
+const normalizedTags = computed(() => {
+  if (!product.value?.tags) return []
+  return String(product.value.tags)
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean)
+})
+
 const thumbnails = computed(() => {
   if (!product.value) return []
+  const list: string[] = []
+  if (product.value.imageGallery) {
+    try {
+      const parsed = JSON.parse(product.value.imageGallery)
+      if (Array.isArray(parsed)) {
+        parsed.forEach((url) => list.push(String(url)))
+      }
+    } catch {
+      product.value.imageGallery
+        .split(',')
+        .map((s: string) => s.trim())
+        .filter(Boolean)
+        .forEach((url: string) => list.push(url))
+    }
+  }
+  if (product.value.imageUrl && !list.includes(product.value.imageUrl)) {
+    list.unshift(product.value.imageUrl)
+  }
+  if (list.length === 0) {
+    list.push(
+      'https://placehold.co/420x420/f8fafc/64748b?text=Angle+1',
+      'https://placehold.co/420x420/f1f5f9/64748b?text=Angle+2',
+      'https://placehold.co/420x420/e2e8f0/64748b?text=Package'
+    )
+  }
+  return list
+})
+
+const nutritionData = computed(() => {
+  if (Array.isArray(product.value?.nutrition) && product.value.nutrition.length) {
+    return product.value.nutrition
+  }
   return [
-    product.value.imageUrl,
-    'https://placehold.co/400x400/eef/333?text=Side+View',
-    'https://placehold.co/400x400/ffe/333?text=Detail',
-    'https://placehold.co/400x400/efe/333?text=Package'
+    { name: 'Omega-3 / 复合营养', amount: '1000mg', nrv: '--' },
+    { name: '维生素E / 辅助成分', amount: '10mg', nrv: '--' }
   ]
 })
 
-onMounted(async () => {
+const loadProduct = async () => {
   try {
     const { data } = await axios.get(`/api/products/${route.params.id}`)
     product.value = data
     currentImage.value = data.imageUrl
-  } catch (e) {
+    await loadPersonalizedRecommendations()
+  } catch {
     ElMessage.error('加载商品失败')
   }
-})
+}
+
+onMounted(loadProduct)
+watch(() => route.params.id, loadProduct)
+
+const resolveUserId = async (): Promise<number | null> => {
+  const fromStorage = Number(localStorage.getItem('userId'))
+  if (Number.isFinite(fromStorage) && fromStorage > 0) return fromStorage
+  const token = localStorage.getItem('token')
+  if (!token) return null
+  try {
+    const { data } = await axios.get('/api/auth/me')
+    if (data?.id) {
+      localStorage.setItem('userId', String(data.id))
+      return Number(data.id)
+    }
+  } catch {
+    return null
+  }
+  return null
+}
+
+const loadPersonalizedRecommendations = async () => {
+  try {
+    const userId = await resolveUserId()
+    const url = userId ? `/api/products/recommend?userId=${userId}` : '/api/products'
+    const { data } = await axios.get(url)
+    recommendList.value = (data || [])
+      .filter((item: any) => item.id !== product.value?.id)
+      .sort((a: any, b: any) => Number(b.relevanceScore || 0) - Number(a.relevanceScore || 0))
+      .slice(0, 3)
+  } catch {
+    recommendList.value = []
+  }
+}
 
 async function addToCart() {
   try {
     await axios.post('/api/cart/add', { productId: product.value.id, quantity: qty.value })
-    ElMessage.success('成功加入购物车')
-  } catch(e) {
+    ElMessage.success('已加入购物车')
+  } catch {
     ElMessage.error('请先登录')
   }
 }
 
 async function buyNow() {
-  await addToCart()
-  const amount = Number(product.value.price) * qty.value
-  const { data } = await axios.post('/api/pay/create', { amount })
-  window.location.href = data.payUrl
+  try {
+    await addToCart()
+    const amount = Number(product.value.price) * qty.value
+    const { data } = await axios.post('/api/pay/create', { amount })
+    window.location.href = data.payUrl
+  } catch {
+    ElMessage.error('购买请求失败，请稍后重试')
+  }
+}
+
+function goDetail(id: number) {
+  if (!id) return
+  router.push(`/product/${id}`)
 }
 </script>
 
 <style scoped>
-.product-detail-container {
-  padding-top: 20px;
+.detail-page {
+  background:
+    radial-gradient(circle at 8% 0%, rgba(46, 204, 113, 0.14), transparent 30%),
+    radial-gradient(circle at 90% 6%, rgba(30, 171, 97, 0.1), transparent 26%),
+    var(--bg-page);
+  min-height: 100vh;
+  padding: 20px 0 30px;
 }
-.detail-card {
+
+.container {
+  width: 1200px;
+  margin: 0 auto;
+}
+
+.hero-card,
+.side-card,
+.tabs-card {
   border: none;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  background: rgba(255, 255, 255, 0.9);
 }
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 520px 1fr;
+  gap: 24px;
+}
+
 .main-image-box {
-  width: 100%;
-  height: 400px;
-  border: 1px solid #eee;
+  border-radius: var(--radius);
+  background: #ffffff;
+  border: 1px solid #dcefe5;
+  height: 420px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 15px;
   overflow: hidden;
 }
+
 .main-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
-.thumbnail-item {
-  width: 100%;
-  height: 64px;
-  border: 2px solid transparent;
+
+.thumbs {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.thumb-btn {
+  border: 1px solid #d6eadf;
+  border-radius: 10px;
+  background: #fff;
+  padding: 6px;
   cursor: pointer;
 }
-.thumbnail-item.active {
-  border-color: #409EFF;
+
+.thumb-btn.active {
+  border-color: #2ecc71;
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18);
 }
-.thumbnail-item img {
+
+.thumb-btn img {
   width: 100%;
-  height: 100%;
+  height: 72px;
   object-fit: cover;
+  border-radius: 8px;
 }
-.product-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 10px;
+
+.title {
+  margin: 0;
+  font-size: 30px;
+  color: #153e30;
 }
-.product-subtitle {
-  font-size: 14px;
-  color: #999;
-  margin-bottom: 20px;
+
+.subtitle {
+  margin-top: 10px;
+  color: #4e675c;
+  line-height: 1.6;
 }
-.price-panel {
-  background: #fff5f5;
-  padding: 15px;
-  margin-bottom: 20px;
+
+.meta-row,
+.tag-row {
   display: flex;
-  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
 }
-.price-label {
-  font-size: 14px;
-  color: #999;
-  margin-right: 15px;
+
+.meta-pill,
+.tag {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
 }
-.price-value {
-  color: #e4393c;
-  font-weight: bold;
-  margin-right: 10px;
-}
-.currency {
-  font-size: 18px;
-}
-.amount {
-  font-size: 28px;
-}
-.promo-tag {
-  background: #e4393c;
+
+.meta-pill {
+  background: linear-gradient(135deg, #2ecc71 0%, #23ad62 100%);
   color: #fff;
+}
+
+.meta-pill.soft {
+  background: #edf7f2;
+  color: #2f5546;
+}
+
+.tag {
+  background: #f0fbf5;
+  border: 1px solid #caead9;
+  color: #2f6a52;
+}
+
+.price-card {
+  margin-top: 16px;
+  background: linear-gradient(130deg, #ecfbf3 0%, #dbf6e8 100%);
+  border: 1px solid #bae8cf;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.label {
+  font-size: 13px;
+  color: #276345;
+}
+
+.price {
+  color: #158a4f;
+  font-size: 34px;
+  font-weight: 800;
+}
+
+.note {
   font-size: 12px;
-  padding: 2px 6px;
-  border-radius: 2px;
+  color: #2f6a52;
 }
-.sku-panel {
-  border-top: 1px dotted #ddd;
-  border-bottom: 1px dotted #ddd;
-  padding: 20px 0;
-  margin-bottom: 30px;
-}
-.sku-row {
+
+.purchase-row {
+  margin-top: 18px;
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
+  gap: 12px;
 }
-.sku-row:last-child {
-  margin-bottom: 0;
+
+.field-label {
+  width: 44px;
+  color: #355549;
 }
-.sku-label {
-  width: 60px;
-  color: #666;
-}
-.stock-info {
-  margin-left: 15px;
-  color: #999;
+
+.stock {
+  color: #1d8f54;
   font-size: 12px;
 }
-.action-panel {
-  margin-bottom: 30px;
+
+.actions {
+  margin-top: 18px;
   display: flex;
-  gap: 20px;
+  gap: 12px;
 }
-.service-guarantee {
-  color: #999;
-  font-size: 12px;
-  display: flex;
-  gap: 20px;
+
+.content-row {
+  margin-top: 16px;
 }
-.service-guarantee span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+
+.side-title {
+  font-weight: 700;
 }
-.recommend-sidebar {
-  border: none;
+
+.side-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #eef2f7;
+  cursor: pointer;
 }
-.sidebar-header {
-  font-weight: bold;
+
+.side-item:last-child {
+  border-bottom: none;
 }
-.sidebar-item {
-  margin-bottom: 20px;
-  text-align: center;
-}
-.sidebar-img-box {
+
+.side-item img {
   width: 100%;
-  height: 150px;
-  margin-bottom: 8px;
+  border-radius: 10px;
 }
-.sidebar-img-box img {
+
+.side-name {
+  margin-top: 8px;
+  color: #355549;
+}
+
+.side-price {
+  color: #188c51;
+  font-weight: 700;
+}
+
+.desc-block {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.desc-block img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  border-radius: 12px;
 }
-.sidebar-name {
-  font-size: 12px;
-  color: #666;
-  margin-bottom: 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.sidebar-price {
-  color: #e4393c;
-  font-weight: bold;
-}
+
 .comment-item {
-  padding: 15px 0;
+  padding: 12px 0;
+  border-bottom: 1px dashed #e2e8f0;
 }
-.comment-user {
+
+.comment-item:last-child {
+  border-bottom: none;
+}
+
+.comment-head {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
 }
-.username {
-  font-size: 12px;
-  color: #666;
-}
-.comment-date {
-  font-size: 12px;
-  color: #999;
+
+.comment-body {
   margin-top: 8px;
+  color: #4e675c;
+}
+
+:deep(.tabs-card .el-tabs__item.is-active) {
+  color: #1d8f54;
+}
+
+:deep(.tabs-card .el-tabs__active-bar) {
+  background-color: #2ecc71;
+}
+
+@media (max-width: 1280px) {
+  .container {
+    width: 100%;
+    padding: 0 12px;
+  }
+}
+
+@media (max-width: 960px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .main-image-box {
+    height: 320px;
+  }
 }
 </style>

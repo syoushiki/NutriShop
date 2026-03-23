@@ -1,53 +1,56 @@
 ﻿<template>
-  <div class="nutrishop-top-bar">
-    <div class="container">
-      <div class="top-bar-left">
-        <router-link to="/" class="nav-link"><el-icon><HomeFilled /></el-icon> 首页</router-link>
-        <router-link to="/profile-survey" class="nav-link"><el-icon><Edit /></el-icon> 定制推荐</router-link>
+  <header class="header-shell">
+    <div class="top-nav container glass-card">
+      <div class="left-links">
+        <router-link to="/" class="nav-link"><el-icon><HomeFilled /></el-icon>首页</router-link>
+        <router-link to="/profile-survey" class="nav-link"><el-icon><Edit /></el-icon>定制推荐</router-link>
       </div>
 
-      <div class="top-bar-right">
+      <div class="right-links">
         <router-link to="/login" class="nav-link" v-if="!isLoggedIn">
-          <el-icon><User /></el-icon> 登录/注册
+          <el-icon><User /></el-icon>登录/注册
         </router-link>
 
         <el-dropdown v-else>
-          <span class="nav-link">
-            <el-icon><User /></el-icon> 欢迎, {{ username }}
+          <span class="nav-link user-link">
+            <el-icon><User /></el-icon>{{ username }}
             <el-icon class="el-icon--right"><ArrowDown /></el-icon>
           </span>
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item @click="router.push('/profile')">个人主页</el-dropdown-item>
+              <el-dropdown-item @click="router.push('/orders')">我的订单</el-dropdown-item>
               <el-dropdown-item v-if="isAdmin" @click="router.push('/admin')">后台管理</el-dropdown-item>
+              <el-dropdown-item v-if="isAdmin" @click="router.push('/admin/orders')">订单管理</el-dropdown-item>
               <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
 
         <router-link to="/cart" class="nav-link cart-link">
-          <el-icon><ShoppingCart /></el-icon> 购物车
-          <el-badge :value="cartCount" class="item" type="danger" v-if="cartCount > 0" />
+          <el-icon><ShoppingCart /></el-icon>购物车
+          <el-badge :value="cartCount" class="badge" type="danger" v-if="cartCount > 0" />
         </router-link>
       </div>
     </div>
-  </div>
 
-  <div class="nutrishop-search-section" v-if="isHomePage">
-    <div class="container search-content">
-      <router-link to="/" class="nutrishop-logo">
-        <span class="logo-icon">🥦</span>
-        <span class="logo-text">NutriShop</span>
-      </router-link>
+    <div class="search-wrap" v-if="isHomePage">
+      <div class="container search-shell glass-card">
+        <router-link to="/" class="logo-block">
+          <span class="logo-icon">🌿</span>
+          <div>
+            <div class="logo-text">NutriShop</div>
+            <div class="logo-sub">Health • Trust • Science</div>
+          </div>
+        </router-link>
 
-      <div class="search-bar">
-        <div class="search-input-wrapper">
-          <input v-model="q" @keydown.enter="search" placeholder="搜索健康好物..." class="search-input" />
+        <div class="search-input-wrap">
+          <input v-model="q" @keydown.enter="search" placeholder="搜索你关心的健康产品..." class="search-input" />
           <button @click="search" class="search-btn">搜索</button>
         </div>
       </div>
     </div>
-  </div>
+  </header>
 </template>
 
 <script setup lang="ts">
@@ -85,7 +88,7 @@ const checkLoginStatus = async () => {
 
   try {
     const { data } = await axios.get('/api/cart')
-    if (data && data.items) {
+    if (data?.items) {
       cartCount.value = data.items.reduce((acc: number, item: any) => acc + item.quantity, 0)
     }
   } catch {
@@ -112,53 +115,78 @@ onMounted(() => {
 .container {
   width: 1200px;
   margin: 0 auto;
+}
+
+.header-shell {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(4px);
+  background: linear-gradient(180deg, rgba(246, 248, 247, 0.95) 0%, rgba(246, 248, 247, 0.7) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.glass-card {
+  backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  box-shadow: 0 10px 30px rgba(2, 32, 20, 0.08);
+}
+
+.top-nav {
+  margin-top: 10px;
+  border-radius: 18px;
+  padding: 10px 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.nutrishop-top-bar {
-  background-color: #131921;
-  color: #fff;
-  font-size: 16px;
-  padding: 10px 0;
-}
-
-.top-bar-left,
-.top-bar-right {
+.left-links,
+.right-links {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 18px;
 }
 
 .nav-link {
-  color: #fff;
-  text-decoration: none;
+  color: #0f172a;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  cursor: pointer;
+  gap: 6px;
+  font-weight: 500;
+  transition: color 0.2s ease;
 }
 
 .nav-link:hover {
-  text-decoration: underline;
+  color: var(--brand-700);
 }
 
-.nutrishop-search-section {
-  background: #f5f5f5;
-  padding: 24px 0 10px;
+.cart-link {
+  position: relative;
 }
 
-.search-content {
-  flex-direction: column;
-  gap: 16px;
+.badge {
+  margin-left: 2px;
 }
 
-.nutrishop-logo {
-  text-decoration: none;
+.search-wrap {
+  padding: 12px 0 14px;
+}
+
+.search-shell {
+  border-radius: 22px;
+  padding: 14px 18px;
   display: flex;
   align-items: center;
-  color: #222;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.logo-block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .logo-icon {
@@ -167,36 +195,40 @@ onMounted(() => {
 
 .logo-text {
   font-size: 28px;
-  font-weight: 600;
-  margin-left: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: #0b3d2b;
 }
 
-.search-bar {
-  width: 100%;
-  max-width: 700px;
+.logo-sub {
+  font-size: 12px;
+  color: #64817a;
 }
 
-.search-input-wrapper {
+.search-input-wrap {
+  width: min(760px, 100%);
   display: flex;
-  width: 100%;
-  background: #fff;
-  border-radius: 40px;
+  border-radius: 999px;
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .search-input {
   flex: 1;
   border: none;
-  padding: 12px 16px;
   outline: none;
+  padding: 12px 16px;
+  background: transparent;
 }
 
 .search-btn {
   border: none;
-  background: #111;
+  background: linear-gradient(120deg, var(--brand), var(--brand-700));
   color: #fff;
-  padding: 0 22px;
+  padding: 0 24px;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -204,6 +236,17 @@ onMounted(() => {
   .container {
     width: 100%;
     padding: 0 12px;
+  }
+}
+
+@media (max-width: 900px) {
+  .search-shell {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .logo-text {
+    font-size: 24px;
   }
 }
 </style>

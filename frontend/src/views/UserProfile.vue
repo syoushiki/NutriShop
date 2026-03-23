@@ -3,19 +3,12 @@
     <div class="container">
       <el-card class="profile-card">
         <template #header>
-          <div class="card-header">
-            <h2>个人主页</h2>
-          </div>
+          <div class="card-header"><h2>个人主页</h2></div>
         </template>
 
         <el-form label-position="top">
           <el-form-item label="收货地址">
-            <el-input
-              v-model="address"
-              type="textarea"
-              :rows="3"
-              placeholder="请输入详细收货地址"
-            />
+            <el-input v-model="address" type="textarea" :rows="3" placeholder="请输入详细收货地址" />
           </el-form-item>
           <el-button type="primary" :loading="savingAddress" @click="saveAddress">保存地址</el-button>
         </el-form>
@@ -23,16 +16,18 @@
 
       <el-card class="profile-card survey-card">
         <template #header>
-          <div class="card-header">
-            <h3>推荐画像结果</h3>
-          </div>
+          <div class="card-header"><h3>推荐画像结果</h3></div>
         </template>
 
-        <div v-if="hasSurvey">
+        <div v-if="hasSurvey" class="survey-content">
           <p><strong>年龄段：</strong>{{ survey.ageGroup }}</p>
-          <p><strong>性别：</strong>{{ survey.gender === 'male' ? '男' : '女' }}</p>
+          <p><strong>性别：</strong>{{ survey.gender === 'male' ? '男' : survey.gender === 'female' ? '女' : '-' }}</p>
           <p><strong>预算偏好：</strong>{{ budgetLabel(survey.budget) }}</p>
-          <p><strong>健康诉求：</strong>{{ goalLabels.join('、') }}</p>
+          <p><strong>健康诉求：</strong>{{ goalLabels.length ? goalLabels.join('、') : '-' }}</p>
+
+          <el-divider />
+          <div class="print-title">问卷结果打印输出</div>
+          <pre class="print-block">{{ printableSurvey }}</pre>
         </div>
 
         <div v-else class="empty-survey">
@@ -52,9 +47,9 @@ import axios from 'axios'
 const router = useRouter()
 const savingAddress = ref(false)
 const address = ref('')
-const userId = ref<number | null>(null)
 
 const survey = reactive({
+  id: null as number | null,
   ageGroup: '',
   gender: '',
   budget: '',
@@ -86,6 +81,16 @@ const budgetLabel = (budget: string) => {
   return budget || '-'
 }
 
+const printableSurvey = computed(() => {
+  const payload = {
+    ageGroup: survey.ageGroup || null,
+    gender: survey.gender || null,
+    budget: survey.budget || null,
+    healthGoals: survey.healthGoals ? survey.healthGoals.split(',').map((g) => g.trim()).filter(Boolean) : []
+  }
+  return JSON.stringify(payload, null, 2)
+})
+
 const resolveUserId = async () => {
   const token = localStorage.getItem('token')
   if (!token) {
@@ -110,18 +115,18 @@ const loadProfileData = async () => {
   try {
     const id = await resolveUserId()
     if (!id) return
-    userId.value = id
 
     const meRes = await axios.get('/api/auth/me')
     address.value = meRes.data?.address || ''
 
     try {
       const surveyRes = await axios.get(`/api/user-profiles/${id}`)
+      survey.id = surveyRes.data?.id || null
       survey.ageGroup = surveyRes.data?.ageGroup || ''
       survey.gender = surveyRes.data?.gender || ''
       survey.budget = surveyRes.data?.budget || ''
       survey.healthGoals = surveyRes.data?.healthGoals || ''
-      hasSurvey.value = !!(survey.ageGroup && survey.gender && survey.budget && survey.healthGoals)
+      hasSurvey.value = !!survey.id
     } catch (error: any) {
       if (error.response?.status === 404) {
         hasSurvey.value = false
@@ -137,7 +142,8 @@ const loadProfileData = async () => {
 const saveAddress = async () => {
   try {
     savingAddress.value = true
-    await axios.put('/api/auth/me/address', { address: address.value })
+    const { data } = await axios.put('/api/auth/me/address', { address: address.value })
+    address.value = data?.address || ''
     ElMessage.success('地址已保存')
   } catch {
     ElMessage.error('保存地址失败')
@@ -152,7 +158,10 @@ onMounted(loadProfileData)
 <style scoped>
 .profile-page {
   min-height: 100vh;
-  background: #f6f8fb;
+  background:
+    radial-gradient(circle at 8% 2%, rgba(46, 204, 113, 0.14), transparent 28%),
+    radial-gradient(circle at 90% 12%, rgba(29, 161, 98, 0.1), transparent 24%),
+    var(--bg-page);
   padding: 28px 0;
 }
 
@@ -165,18 +174,50 @@ onMounted(loadProfileData)
 }
 
 .profile-card {
-  border-radius: 12px;
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .card-header h2,
 .card-header h3 {
   margin: 0;
+  color: #173e30;
+}
+
+.survey-content p {
+  margin: 8px 0;
+  color: #39594b;
+}
+
+.print-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #1f4f3d;
+}
+
+.print-block {
+  margin: 0;
+  background: #10261d;
+  color: #d7efe3;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-x: auto;
 }
 
 .empty-survey {
   min-height: 140px;
   display: flex;
   align-items: center;
+}
+
+.empty-survey a {
+  color: #1f9b60;
+  text-decoration: none;
+  font-weight: 600;
 }
 
 @media (max-width: 960px) {

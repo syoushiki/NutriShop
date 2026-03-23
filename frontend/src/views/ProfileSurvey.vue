@@ -126,7 +126,10 @@ const handleSubmit = async () => {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #eef2ff, #f8fafc);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(46, 204, 113, 0.16), transparent 33%),
+    radial-gradient(circle at 90% 8%, rgba(36, 172, 99, 0.12), transparent 24%),
+    var(--bg-page);
   padding: 40px 20px;
   display: flex;
   flex-direction: column;
@@ -142,20 +145,22 @@ const handleSubmit = async () => {
   font-size: 26px;
   font-weight: 700;
   margin-bottom: 8px;
+  color: #173e30;
 }
 
 .subtitle {
   font-size: 14px;
-  color: #666;
+  color: var(--text-muted);
 }
 
 .card {
   width: 100%;
-  max-width: 500px;
-  background: white;
-  border-radius: 20px;
+  max-width: 560px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-lg);
   padding: 30px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(8px);
 }
 
 .section {
@@ -167,13 +172,14 @@ const handleSubmit = async () => {
   font-weight: 600;
   margin-bottom: 15px;
   position: relative;
+  color: #1f4f3d;
 }
 
 .section-title::before {
   content: '';
   width: 4px;
   height: 16px;
-  background: #6366f1;
+  background: #2ecc71;
   position: absolute;
   left: -10px;
   top: 3px;
@@ -191,5 +197,16 @@ const handleSubmit = async () => {
   height: 44px;
   border-radius: 10px;
   font-size: 15px;
+}
+
+:deep(.el-radio__input.is-checked .el-radio__inner),
+:deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
+  border-color: #2ecc71;
+  background: #2ecc71;
+}
+
+:deep(.el-radio__input.is-checked + .el-radio__label),
+:deep(.el-checkbox__input.is-checked + .el-checkbox__label) {
+  color: #1f9b60;
 }
 </style>

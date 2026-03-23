@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS products (
   name VARCHAR(255) NOT NULL,
   description TEXT,
   image_url VARCHAR(255),
+  image_gallery TEXT,
   price DECIMAL(10, 2) NOT NULL,
   tags VARCHAR(500),
   target_audience VARCHAR(500),
@@ -45,6 +46,28 @@ CREATE TABLE IF NOT EXISTS cart_items (
   name VARCHAR(255) NOT NULL,
   price DECIMAL(10, 2) NOT NULL,
   quantity INT NOT NULL DEFAULT 1,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS shop_orders (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  username VARCHAR(255) NOT NULL,
+  user_address VARCHAR(500),
+  total_amount DECIMAL(19, 2) NOT NULL,
+  confirmed BOOLEAN NOT NULL DEFAULT FALSE,
+  shipped BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at DATETIME NOT NULL,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS order_items (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  order_id BIGINT NOT NULL,
+  product_id BIGINT NOT NULL,
+  product_name VARCHAR(255) NOT NULL,
+  unit_price DECIMAL(19, 2) NOT NULL,
+  quantity INT NOT NULL,
+  subtotal DECIMAL(19, 2) NOT NULL,
   PRIMARY KEY (id)
 );
 

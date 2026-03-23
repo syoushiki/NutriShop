@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <el-config-provider namespace="ep">
     <el-container>
       <app-header />
@@ -16,64 +16,76 @@ import AppFooter from './components/AppFooter.vue'
 </script>
 
 <style>
-/* 全局样式 */
+:root {
+  --brand: #2ecc71;
+  --brand-700: #27b864;
+  --brand-100: #eafaf1;
+  --bg-page: #f6f8f7;
+  --bg-card: #ffffff;
+  --text-main: #0f172a;
+  --text-sub: #64748b;
+  --line-soft: #e8edf1;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --shadow-soft: 0 8px 30px rgba(15, 23, 42, 0.06);
+  --shadow-hover: 0 14px 36px rgba(15, 23, 42, 0.12);
+
+  --el-color-primary: #2ecc71;
+  --el-color-primary-light-3: #59d98b;
+  --el-color-primary-light-7: #b9efcf;
+  --el-color-primary-dark-2: #27b864;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 14px;
-  line-height: 1.5;
-  color: #333;
-  background-color: #f5f5f5;
+  line-height: 1.55;
+  color: var(--text-main);
+  background: var(--bg-page);
 }
 
 a {
   text-decoration: none;
-  color: #0066c0;
+  color: inherit;
 }
 
-a:hover {
-  color: #c45500;
-  text-decoration: underline;
+.el-main {
+  --el-main-padding: 0;
 }
 
-/* 覆盖Element Plus默认样式 */
+.el-card {
+  border-radius: var(--radius-xl);
+  border-color: var(--line-soft);
+}
+
 .el-button--primary {
-  background-color: #ff9900 !important;
-  border-color: #ff9900 !important;
+  background-color: var(--brand) !important;
+  border-color: var(--brand) !important;
 }
 
 .el-button--primary:hover {
-  background-color: #f08800 !important;
-  border-color: #f08800 !important;
+  background-color: var(--brand-700) !important;
+  border-color: var(--brand-700) !important;
 }
 
-.el-input__wrapper {
-  border-radius: 4px !important;
+.el-input__wrapper,
+.el-select__wrapper,
+.el-textarea__inner {
+  border-radius: 12px !important;
 }
 
-.el-menu {
-  border-bottom: none !important;
-}
-
-.el-menu-item {
-  font-size: 14px !important;
-}
-
-.el-menu-item.is-active {
-  color: #ff9900 !important;
-  font-weight: 500 !important;
-}
-
-.el-rate__icon {
-  color: #ff9900 !important;
-}
-
-/* 修复全局 SVG 图标大小问题 */
 .el-icon {
   width: 1em;
   height: 1em;

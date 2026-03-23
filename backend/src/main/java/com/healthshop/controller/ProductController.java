@@ -50,6 +50,7 @@ public class ProductController {
     product.setName(request.getName().trim());
     product.setDescription(normalizeNullableText(request.getDescription()));
     product.setImageUrl(normalizeNullableText(request.getImageUrl()));
+    product.setImageGallery(normalizeNullableText(request.getImageGallery()));
     product.setPrice(request.getPrice());
     product.setTags(normalizeNullableText(request.getTags()));
     product.setTargetAudience(normalizeNullableText(request.getTargetAudience()));
@@ -64,6 +65,7 @@ public class ProductController {
           existing.setName(request.getName().trim());
           existing.setDescription(normalizeNullableText(request.getDescription()));
           existing.setImageUrl(normalizeNullableText(request.getImageUrl()));
+          existing.setImageGallery(normalizeNullableText(request.getImageGallery()));
           existing.setPrice(request.getPrice());
           existing.setTags(normalizeNullableText(request.getTags()));
           existing.setTargetAudience(normalizeNullableText(request.getTargetAudience()));

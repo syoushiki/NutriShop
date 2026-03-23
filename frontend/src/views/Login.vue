@@ -233,23 +233,28 @@ const handleRegister = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #f5f5f5;
+  background:
+    radial-gradient(circle at 8% 2%, rgba(46, 204, 113, 0.15), transparent 30%),
+    radial-gradient(circle at 90% 12%, rgba(23, 139, 84, 0.1), transparent 24%),
+    var(--bg-page);
+  padding: 12px;
 }
 
 .card {
-  width: 380px;
+  width: 420px;
   padding: 30px;
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(8px);
 }
 
 .title {
   text-align: center;
   margin-bottom: 20px;
-  font-size: 20px;
-  font-weight: 600;
-  color: #333;
+  font-size: 22px;
+  font-weight: 700;
+  color: #173e30;
 }
 
 .tab-container {
@@ -259,46 +264,59 @@ const handleRegister = async () => {
 
 .tab {
   flex: 1;
-  padding: 10px;
+  padding: 10px 12px;
   cursor: pointer;
-  border: none;
-  background: #f0f2f5;
-  color: #333;
+  border: 1px solid #d8ece1;
+  background: #f4faf7;
+  color: #2f5546;
   font-size: 14px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
 }
 
 .active-tab {
   flex: 1;
-  padding: 10px;
+  padding: 10px 12px;
   cursor: pointer;
-  border: none;
-  background: #000;
+  border: 1px solid #1f9b60;
+  background: linear-gradient(135deg, #2ecc71 0%, #25b868 100%);
   color: #fff;
   font-size: 14px;
+  border-radius: 10px;
+  box-shadow: 0 8px 16px rgba(37, 184, 104, 0.24);
 }
 
 .input {
   width: 100%;
-  padding: 10px;
+  padding: 11px 12px;
   margin-bottom: 15px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
+  border-radius: 10px;
+  border: 1px solid #d2e9dd;
   font-size: 14px;
+  background: #fcfffd;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #2ecc71;
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.14);
 }
 
 .button {
   width: 100%;
-  padding: 10px;
-  border-radius: 8px;
+  padding: 11px;
+  border-radius: 10px;
   border: none;
-  background-color: #000;
+  background: linear-gradient(135deg, #2ecc71 0%, #23ad62 100%);
   color: #fff;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 10px 20px rgba(37, 184, 104, 0.22);
 }
 
 .register-button {
-  background-color: #000;
+  background: linear-gradient(135deg, #2ecc71 0%, #23ad62 100%);
 }
 
 .button:disabled {

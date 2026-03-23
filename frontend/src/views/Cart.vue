@@ -63,10 +63,12 @@
 import axios from 'axios'
 import { onMounted, ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
 
 const items = ref<any[]>([])
 const risk = ref<any>(null)
 const coupon = ref('')
+const router = useRouter()
 
 const loadCart = async () => {
   const { data } = await axios.get('/api/cart')
@@ -105,8 +107,15 @@ const removeItem = async (row: any) => {
 
 async function checkout() {
   try {
-    const { data } = await axios.post('/api/pay/create', { amount: payable.value })
-    window.location.href = data.payUrl
+    const { data } = await axios.post('/api/orders/submit-from-cart')
+    if (data?.id) {
+      ElMessage.success(`订单提交成功，订单号 #${data.id}`)
+      items.value = []
+      router.push('/orders')
+      return
+    }
+    ElMessage.success('订单提交成功')
+    router.push('/orders')
   } catch {
     ElMessage.error('结算失败，请稍后重试')
   }
@@ -119,6 +128,18 @@ async function checkout() {
   margin: 24px auto;
 }
 
+.cart-page {
+  padding: 4px 0 20px;
+}
+
+:deep(.cart-list-card),
+:deep(.summary-card) {
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  background: rgba(255, 255, 255, 0.9);
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -127,6 +148,7 @@ async function checkout() {
 
 .card-header h3 {
   margin: 0;
+  color: #173e30;
 }
 
 .qty-box {
@@ -143,26 +165,37 @@ async function checkout() {
 .summary-title {
   font-weight: 700;
   margin-bottom: 12px;
+  color: #1f4f3d;
 }
 
 .summary-row {
   display: flex;
   justify-content: space-between;
   margin: 8px 0;
-  color: #555;
+  color: #4b6359;
 }
 
 .summary-row.final {
   font-size: 16px;
   font-weight: 700;
-  color: #111;
-  border-top: 1px solid #eceff3;
+  color: #173e30;
+  border-top: 1px solid #dcefe4;
   padding-top: 10px;
 }
 
 .checkout-btn {
   width: 100%;
   margin-top: 12px;
+}
+
+:deep(.cart-table .el-table__inner-wrapper)::before {
+  display: none;
+}
+
+:deep(.cart-table th.el-table__cell) {
+  background: #f3faf6;
+  color: #2f5546;
+  font-weight: 700;
 }
 
 @media (max-width: 1280px) {
