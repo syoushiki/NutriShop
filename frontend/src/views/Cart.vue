@@ -60,10 +60,10 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios'
 import { onMounted, ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const items = ref<any[]>([])
 const risk = ref<any>(null)
@@ -105,20 +105,8 @@ const removeItem = async (row: any) => {
   ElMessage.success('已删除该商品')
 }
 
-async function checkout() {
-  try {
-    const { data } = await axios.post('/api/orders/submit-from-cart')
-    if (data?.id) {
-      ElMessage.success(`订单提交成功，订单号 #${data.id}`)
-      items.value = []
-      router.push('/orders')
-      return
-    }
-    ElMessage.success('订单提交成功')
-    router.push('/orders')
-  } catch {
-    ElMessage.error('结算失败，请稍后重试')
-  }
+function checkout() {
+  router.push('/checkout')
 }
 </script>
 

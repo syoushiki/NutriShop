@@ -117,16 +117,42 @@ a {
   border-radius: 12px !important;
 }
 
-.el-icon {
-  width: 1em;
-  height: 1em;
-  vertical-align: -0.15em;
+.el-icon,
+.ep-icon {
+  width: 16px !important;
+  height: 16px !important;
+  line-height: 16px !important;
+  font-size: 16px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  vertical-align: middle;
   fill: currentColor;
   overflow: hidden;
 }
 
-.el-icon svg {
-  width: 100%;
-  height: 100%;
+.el-icon svg,
+.ep-icon svg {
+  width: 1em !important;
+  height: 1em !important;
+}
+
+.el-empty,
+.ep-empty {
+  padding: 20px 0 !important;
+}
+
+.el-empty__image,
+.ep-empty__image {
+  display: none !important;
+}
+
+.el-message__icon,
+.ep-message__icon {
+  width: 16px !important;
+  height: 16px !important;
+  font-size: 16px !important;
+  line-height: 16px !important;
 }
 </style>

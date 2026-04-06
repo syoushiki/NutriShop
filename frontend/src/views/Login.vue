@@ -205,7 +205,7 @@ const handleRegister = async () => {
     window.dispatchEvent(new Event('auth-change'))
 
     setTimeout(() => {
-      router.push('/profile-survey')
+      router.push('/')
     }, 1000)
   } catch (error: any) {
     if (error.response) {

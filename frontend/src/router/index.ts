@@ -9,6 +9,7 @@ import UserProfile from '../views/UserProfile.vue'
 import ProductEditor from '../views/ProductEditor.vue'
 import MyOrders from '../views/MyOrders.vue'
 import AdminOrders from '../views/AdminOrders.vue'
+import Checkout from '../views/Checkout.vue'
 
 const routes = [
   { path: '/', component: Home },
@@ -21,6 +22,7 @@ const routes = [
   { path: '/admin/products/:id/edit', component: ProductEditor },
   { path: '/profile-survey', component: ProfileSurvey },
   { path: '/profile', component: UserProfile },
+  { path: '/checkout', component: Checkout },
   { path: '/orders', component: MyOrders }
 ]
 
@@ -37,7 +39,7 @@ router.beforeEach((to, from, next) => {
     } else {
       next('/')
     }
-  } else if (to.path === '/orders' || to.path === '/profile' || to.path === '/profile-survey' || to.path === '/cart') {
+  } else if (to.path === '/orders' || to.path === '/profile' || to.path === '/profile-survey' || to.path === '/cart' || to.path === '/checkout') {
     const token = localStorage.getItem('token')
     if (token) next()
     else next('/login')

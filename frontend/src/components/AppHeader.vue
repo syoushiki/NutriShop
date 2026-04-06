@@ -3,7 +3,6 @@
     <div class="top-nav container glass-card">
       <div class="left-links">
         <router-link to="/" class="nav-link"><el-icon><HomeFilled /></el-icon>首页</router-link>
-        <router-link to="/profile-survey" class="nav-link"><el-icon><Edit /></el-icon>定制推荐</router-link>
       </div>
 
       <div class="right-links">
@@ -11,7 +10,7 @@
           <el-icon><User /></el-icon>登录/注册
         </router-link>
 
-        <el-dropdown v-else>
+        <el-dropdown v-else trigger="hover" popper-class="user-dropdown-pop">
           <span class="nav-link user-link">
             <el-icon><User /></el-icon>{{ username }}
             <el-icon class="el-icon--right"><ArrowDown /></el-icon>
@@ -22,7 +21,7 @@
               <el-dropdown-item @click="router.push('/orders')">我的订单</el-dropdown-item>
               <el-dropdown-item v-if="isAdmin" @click="router.push('/admin')">后台管理</el-dropdown-item>
               <el-dropdown-item v-if="isAdmin" @click="router.push('/admin/orders')">订单管理</el-dropdown-item>
-              <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
+              <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -56,7 +55,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ShoppingCart, ArrowDown, User, HomeFilled, Edit } from '@element-plus/icons-vue'
+import { ShoppingCart, ArrowDown, User, HomeFilled } from '@element-plus/icons-vue'
 import axios from 'axios'
 
 const q = ref('')
@@ -160,6 +159,61 @@ onMounted(() => {
 
 .nav-link:hover {
   color: var(--brand-700);
+}
+
+.user-link {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(39, 184, 100, 0.2);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(234, 250, 241, 0.8) 100%);
+  box-shadow: 0 6px 14px rgba(31, 79, 61, 0.1);
+  transition: all 0.24s ease;
+  cursor: pointer;
+}
+
+.user-link:hover {
+  border-color: rgba(39, 184, 100, 0.45);
+  box-shadow: 0 10px 20px rgba(31, 79, 61, 0.16);
+  transform: translateY(-1px);
+}
+
+.user-link :deep(.el-icon--right) {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+:deep(.user-dropdown-pop) {
+  border-radius: 12px !important;
+  border: 1px solid #d8ece1 !important;
+  padding: 6px !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  box-shadow: 0 14px 26px rgba(31, 79, 61, 0.16) !important;
+}
+
+:deep(.user-dropdown-pop .el-dropdown-menu) {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+:deep(.user-dropdown-pop .el-dropdown-menu__item) {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 10px 12px !important;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  border-radius: 9px;
+  min-width: 132px;
+  color: #254d3d;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+:deep(.user-dropdown-pop .el-dropdown-menu__item:not(.is-disabled):focus),
+:deep(.user-dropdown-pop .el-dropdown-menu__item:not(.is-disabled):hover) {
+  color: #1f9b60;
+  background: #eafaf1;
 }
 
 .cart-link {

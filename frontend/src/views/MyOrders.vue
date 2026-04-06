@@ -8,7 +8,7 @@
         </div>
       </template>
 
-      <el-empty v-if="orders.length === 0" description="暂无订单，快去下单吧" />
+      <el-empty v-if="orders.length === 0" :image-size="120" description="暂无订单，快去下单吧" />
 
       <div v-for="order in orders" :key="order.id" class="order-card">
         <div class="order-top">

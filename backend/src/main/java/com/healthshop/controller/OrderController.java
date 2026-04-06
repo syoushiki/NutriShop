@@ -13,6 +13,7 @@ import com.healthshop.security.Role;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -41,6 +42,7 @@ public class OrderController {
   }
 
   @PostMapping("/submit-from-cart")
+  @Transactional
   public ResponseEntity<?> submitFromCart() {
     String username = currentUser();
     if (isAnonymous(username)) return ResponseEntity.status(401).build();
@@ -98,6 +100,7 @@ public class OrderController {
   }
 
   @PutMapping("/{id}/status")
+  @Transactional
   public ResponseEntity<?> updateStatus(@PathVariable("id") Long id, @RequestBody OrderStatusUpdateRequest request) {
     User current = currentUserEntity();
     if (current == null) return ResponseEntity.status(401).build();
@@ -119,6 +122,7 @@ public class OrderController {
   }
 
   @DeleteMapping("/{id}/cancel")
+  @Transactional
   public ResponseEntity<?> cancelOwnOrder(@PathVariable("id") Long id) {
     String username = currentUser();
     if (isAnonymous(username)) return ResponseEntity.status(401).build();

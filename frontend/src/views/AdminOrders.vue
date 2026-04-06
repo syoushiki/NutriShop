@@ -17,8 +17,27 @@
             <div class="order-time">{{ formatTime(order.createdAt) }}</div>
           </div>
           <div class="status-group">
-            <el-switch v-model="order.confirmed" active-text="已确认" inactive-text="未确认" @change="updateStatus(order, 'confirmed')" />
-            <el-switch v-model="order.shipped" active-text="已发货" inactive-text="未发货" @change="updateStatus(order, 'shipped')" />
+            <el-button
+              class="status-btn confirm-btn"
+              :type="order.confirmed ? 'success' : 'primary'"
+              :plain="order.confirmed"
+              :loading="isUpdating(order.id, 'confirmed')"
+              :disabled="order.confirmed"
+              @click="confirmOrder(order)"
+            >
+              {{ order.confirmed ? '已确认' : '确认订单' }}
+            </el-button>
+
+            <el-button
+              class="status-btn ship-btn"
+              :type="order.shipped ? 'success' : 'warning'"
+              :plain="order.shipped"
+              :loading="isUpdating(order.id, 'shipped')"
+              :disabled="order.shipped || !order.confirmed"
+              @click="shipOrder(order)"
+            >
+              {{ order.shipped ? '已发货' : '立即发货' }}
+            </el-button>
           </div>
         </div>
 
@@ -47,6 +66,7 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const orders = ref<any[]>([])
+const statusLoading = ref<Record<string, boolean>>({})
 
 const loadOrders = async () => {
   try {
@@ -57,16 +77,33 @@ const loadOrders = async () => {
   }
 }
 
-const updateStatus = async (order: any, field: 'confirmed' | 'shipped') => {
+const statusKey = (id: number, field: 'confirmed' | 'shipped') => `${id}-${field}`
+
+const isUpdating = (id: number, field: 'confirmed' | 'shipped') => !!statusLoading.value[statusKey(id, field)]
+
+const updateStatus = async (order: any, field: 'confirmed' | 'shipped', nextValue: boolean) => {
+  const key = statusKey(order.id, field)
+  statusLoading.value[key] = true
   try {
     const payload: any = {}
-    payload[field] = order[field]
+    payload[field] = nextValue
     await axios.put(`/api/orders/${order.id}/status`, payload)
-    ElMessage.success('状态已更新')
+    order[field] = nextValue
+    ElMessage.success(field === 'confirmed' ? '订单已确认' : '订单已发货')
   } catch {
     ElMessage.error('更新失败')
     await loadOrders()
+  } finally {
+    statusLoading.value[key] = false
   }
+}
+
+const confirmOrder = async (order: any) => {
+  await updateStatus(order, 'confirmed', true)
+}
+
+const shipOrder = async (order: any) => {
+  await updateStatus(order, 'shipped', true)
 }
 
 const formatTime = (value: string) => {
@@ -137,7 +174,39 @@ onMounted(loadOrders)
 
 .status-group {
   display: flex;
-  gap: 16px;
+  gap: 10px;
+  align-items: center;
+}
+
+.status-btn {
+  min-width: 98px;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.confirm-btn:not(.is-disabled):not(.is-plain) {
+  background: linear-gradient(120deg, #28c76f, #1f9b60);
+  border-color: #1f9b60;
+  box-shadow: 0 8px 16px rgba(31, 155, 96, 0.22);
+}
+
+.confirm-btn:not(.is-disabled):not(.is-plain):hover {
+  background: linear-gradient(120deg, #23b465, #1a8a53);
+  border-color: #1a8a53;
+}
+
+.ship-btn:not(.is-disabled):not(.is-plain) {
+  background: linear-gradient(120deg, #ffb347, #ff9800);
+  border-color: #f39a1f;
+  color: #ffffff;
+  box-shadow: 0 8px 16px rgba(243, 154, 31, 0.24);
+}
+
+.ship-btn:not(.is-disabled):not(.is-plain):hover {
+  background: linear-gradient(120deg, #f3a637, #ed8f00);
+  border-color: #dd8300;
+  color: #ffffff;
 }
 
 .order-total {
