@@ -51,8 +51,29 @@
           <div class="summary-row"><span>预计运费</span><span>¥{{ shipping.toFixed(2) }}</span></div>
           <div class="summary-row final"><span>应付金额</span><span>¥{{ payable.toFixed(2) }}</span></div>
 
-          <el-alert v-if="risk?.message" :title="risk.message" type="warning" show-icon />
-          <el-button type="primary" class="checkout-btn" @click="checkout" :disabled="items.length === 0">去结算</el-button>
+          <el-alert
+            v-if="requiresRiskConfirmation"
+            title="当前应付金额已超过 ¥500，请注意商品用量与使用期限，避免囤积或过量使用。"
+            type="warning"
+            show-icon
+            :closable="false"
+          />
+          <el-alert v-if="risk?.message && !requiresRiskConfirmation" :title="risk.message" type="warning" show-icon />
+          <el-checkbox
+            v-if="requiresRiskConfirmation"
+            v-model="riskConfirmed"
+            class="risk-confirm-checkbox"
+          >
+            我已知晓用量和使用期限风险
+          </el-checkbox>
+          <el-button
+            type="primary"
+            class="checkout-btn"
+            @click="checkout"
+            :disabled="items.length === 0 || (requiresRiskConfirmation && !riskConfirmed)"
+          >
+            去结算
+          </el-button>
         </el-card>
       </el-col>
     </el-row>
@@ -60,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
@@ -68,13 +89,18 @@ import axios from 'axios'
 const items = ref<any[]>([])
 const risk = ref<any>(null)
 const coupon = ref('')
+const riskConfirmed = ref(false)
 const router = useRouter()
+
+const evaluateRisk = async () => {
+  const r = await axios.post('/api/cart/evaluate', { items: items.value })
+  risk.value = r.data
+}
 
 const loadCart = async () => {
   const { data } = await axios.get('/api/cart')
   items.value = data.items || []
-  const r = await axios.post('/api/cart/evaluate', { items: items.value })
-  risk.value = r.data
+  await evaluateRisk()
 }
 
 onMounted(loadCart)
@@ -82,11 +108,23 @@ onMounted(loadCart)
 const total = computed(() => items.value.reduce((s, i) => s + Number(i.price) * Number(i.quantity), 0))
 const shipping = computed(() => (items.value.length === 0 ? 0 : (total.value >= 199 ? 0 : 12)))
 const payable = computed(() => total.value + shipping.value)
+const requiresRiskConfirmation = computed(() => total.value > 500)
+
+watch(total, (next, prev) => {
+  if (next <= 500) {
+    riskConfirmed.value = false
+    return
+  }
+  if (prev !== undefined && next !== prev) {
+    riskConfirmed.value = false
+  }
+})
 
 const increaseQty = async (row: any) => {
   const next = Number(row.quantity) + 1
   await axios.put(`/api/cart/${row.id}/quantity`, { quantity: next })
   row.quantity = next
+  await evaluateRisk()
 }
 
 const decreaseQty = async (row: any) => {
@@ -97,15 +135,21 @@ const decreaseQty = async (row: any) => {
   }
   await axios.put(`/api/cart/${row.id}/quantity`, { quantity: next })
   row.quantity = next
+  await evaluateRisk()
 }
 
 const removeItem = async (row: any) => {
   await axios.delete(`/api/cart/${row.id}`)
   items.value = items.value.filter((it) => it.id !== row.id)
+  await evaluateRisk()
   ElMessage.success('已删除该商品')
 }
 
 function checkout() {
+  if (requiresRiskConfirmation.value && !riskConfirmed.value) {
+    ElMessage.warning('请先确认高金额购物的用量与使用期限风险')
+    return
+  }
   router.push('/checkout')
 }
 </script>
@@ -174,6 +218,11 @@ function checkout() {
 .checkout-btn {
   width: 100%;
   margin-top: 12px;
+}
+
+.risk-confirm-checkbox {
+  margin-top: 10px;
+  color: #4b6359;
 }
 
 :deep(.cart-table .el-table__inner-wrapper)::before {
