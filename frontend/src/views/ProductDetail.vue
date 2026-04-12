@@ -26,7 +26,7 @@
             <p class="subtitle">{{ product.description || '高品质营养补充，建议根据个人情况科学食用。' }}</p>
 
             <div class="meta-row">
-              <span class="meta-pill" v-if="product.relevanceScore !== undefined">匹配度 {{ Math.round(product.relevanceScore * 100) }}%</span>
+              <span class="meta-pill" v-if="showRelevanceScore">匹配度 {{ relevancePercent }}%</span>
               <span class="meta-pill soft">正品保障</span>
               <span class="meta-pill soft">极速发货</span>
             </div>
@@ -120,6 +120,15 @@ const qty = ref(1)
 const activeTab = ref('detail')
 const currentImage = ref('')
 const recommendList = ref<any[]>([])
+const showRelevanceScore = computed(() => {
+  const score = Number(product.value?.relevanceScore)
+  return Number.isFinite(score) && score > 0
+})
+const relevancePercent = computed(() => {
+  const score = Number(product.value?.relevanceScore)
+  if (!Number.isFinite(score) || score <= 0) return 0
+  return Math.round(score * 100)
+})
 
 const normalizedTags = computed(() => {
   if (!product.value?.tags) return []
@@ -205,7 +214,17 @@ const loadPersonalizedRecommendations = async () => {
     const userId = await resolveUserId()
     const url = userId ? `/api/products/recommend?userId=${userId}` : '/api/products'
     const { data } = await axios.get(url)
-    recommendList.value = (data || [])
+    const allItems = Array.isArray(data) ? data : []
+    const currentId = product.value?.id
+    const currentScored = allItems.find((item: any) => item.id === currentId)
+    const currentScore = Number(currentScored?.relevanceScore)
+    if (Number.isFinite(currentScore)) {
+      product.value = {
+        ...product.value,
+        relevanceScore: currentScore
+      }
+    }
+    recommendList.value = allItems
       .filter((item: any) => item.id !== product.value?.id)
       .sort((a: any, b: any) => Number(b.relevanceScore || 0) - Number(a.relevanceScore || 0))
       .slice(0, 3)
@@ -504,3 +523,4 @@ function goDetail(id: number) {
   }
 }
 </style>
+
